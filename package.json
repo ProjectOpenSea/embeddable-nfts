@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/ProjectOpenSea/embeddable_nfts#readme",
   "dependencies": {
-    "lit-element": "^2.2.1"
+    "@webcomponents/webcomponentsjs": "^2.4.1",
+    "lit-element": "^2.2.1",
+    "opensea-js": "^0.6.16"
   }
 }
