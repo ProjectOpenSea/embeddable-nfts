@@ -1,9 +1,10 @@
 {
   "name": "embeddable_nfts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Resuable, embeddable webcomponent for OpenSea assets.",
-  "main": "index.js",
   "scripts": {
+    "start": "npm run build",
+    "build": "rollup -c -w --sourcemap",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,8 +18,21 @@
   },
   "homepage": "https://github.com/ProjectOpenSea/embeddable_nfts#readme",
   "dependencies": {
+    "opensea-js": "^0.6.16"
+  },
+  "devDependencies": {
     "@webcomponents/webcomponentsjs": "^2.4.1",
     "lit-element": "^2.2.1",
-    "opensea-js": "^0.6.16"
+    "@babel/cli": "^7.8.3",
+    "@babel/core": "^7.8.3",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "@babel/preset-typescript": "^7.8.3",
+    "rollup": "^1.29.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-livereload": "^1.0.4",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-serve": "^1.0.1"
   }
 }

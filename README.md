@@ -2,16 +2,13 @@
 Easily embed OpenSea listings in your website!
 
 ### Development
+For developers looking to contribute or modify the code use the following commands:
 ```bash
-  npm install -g polymer-cli
   git clone https://github.com/ProjectOpenSea/embeddable_nfts.git
   cd embeddable_nfts
   npm install
-  polymer serve
+  npm start
 ```
 
-### Build for production
-```
-polymer build
-polymer serve build/default
-```
+#### Development server
+This project uses [rollup.js](https://rollupjs.org/guide/en/) for building and running a development server. Once the server starts, any changes made will trigger a rebuild after which those changes should be reflected in your browser.

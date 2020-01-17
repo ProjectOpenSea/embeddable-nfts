@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="/node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js"></script>
+  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+  <script src="/dist/nft-card.js" defer></script>
+  <script src="https://unpkg.com/composited-card@latest/dist/composited-card.packed.js"></script>
+
+  <title>OpenSea Embeddable NFT example</title>
+  <style media="screen">
+    h1 {
+      font-family: Avenir,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-align: center;
+      color: #2c3e50;
+    }
+    .card-container {
+      width: 670px;
+      height: 160px;
+      margin: auto;
+      padding-top: 5vh;
+    }
+  </style>
+</head>
+<body>
+  <h1>OpenSea's Embeddable Nft!</h1>
+  <div class="card-container">
+    <nft-card></nft-card>
+  </div>
+</body>
+</html>
