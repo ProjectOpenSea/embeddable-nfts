@@ -3158,6 +3158,7 @@
         margin: 0;
          /* Centers text since grid-template-columns auto has glitch */
         transform: translateX(-10%);
+        backface-visibility: inherit;
       }
       .no-img {
         grid-template-columns: 100%;
@@ -3197,7 +3198,268 @@
 
   /**
    * Use the customElement decorator to define your class as
-   * a custom element. Registers <my-element> as an HTML tag.
+   * a custom element. Registers <nft-card-front> as an HTML tag.
+   */
+
+  let NftCardFrontTemplate = _decorate([customElement('nft-card-front')], function (_initialize, _LitElement) {
+    class NftCardFrontTemplate extends _LitElement {
+      constructor(...args) {
+        super(...args);
+
+        _initialize(this);
+      }
+
+    }
+
+    return {
+      F: NftCardFrontTemplate,
+      d: [{
+        kind: "get",
+        static: true,
+        key: "styles",
+        value:
+        /**
+         * Create an observed property. Triggers update on change.
+         */
+        function styles() {
+          return css`
+      .card-front {
+        position: absolute;
+        backface-visibility: hidden;
+        background: #FFFFFF;
+        border-radius: 5px;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        position: relative;
+        width: 100%;
+        height: 100%;
+
+      }
+      .asset-image-container {
+        border-right: 1px solid #E2E6EF;
+      }
+      .asset-details-container {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        grid-template-columns: 2fr 1fr;
+        margin: 25px;
+        align-items: center;
+      }
+      .asset-detail {
+        display: flex;
+      }
+      .asset-detail .asset-detail-type {
+        width: 115px;
+        height: 30px;
+        font-size: 12px;
+        margin-right: 10px;
+      }
+      .asset-detail .asset-detail-badge {
+        width: 54px;
+        height: 30px;
+        font-size: 12px;
+      }
+      .asset-detail-name {
+        font-weight: 300;
+      }
+      .asset-detail-price {
+        text-align: right;
+      }
+      .asset-detail-price-current {
+        font-size: 18px;
+        font-weight: 400;
+      }
+      .asset-detail-price-previous {
+        font-size: 14px;
+        color: #828282;
+      }
+      .asset-action-buy {
+        grid-column-start: 1;
+        grid-column-end: 3;
+      }
+      .asset-action-buy button {
+        width: 100%;
+        background: #3291E9;
+        border-radius: 5px;
+        height: 35px;
+        color: white;
+        font-weight: bold;
+        letter-spacing: .5px;
+        cursor: pointer;
+        transition: 200ms;
+        outline: none;
+        border-style: none;
+      }
+      .asset-action-buy button:hover {
+        background: rgb(21, 61, 98);
+      }
+      .asset-action-info {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+
+      }
+      .asset-action-info #info-icon {
+        cursor: pointer;
+        transition: 200ms;
+        opacity: .7;
+        backface-visibility: hidden;
+      }
+      .asset-action-info #info-icon:hover {
+        opacity: 1;
+      }
+    `;
+        }
+        /**
+         * eventHandler - Dispatch event allowing parent to handle click event
+         *
+         * @param  {Object} e the event context
+         * @param  {string} type the event context
+         * @param  {Object} data the event context
+         */
+
+      }, {
+        kind: "method",
+        key: "eventHandler",
+        value: function eventHandler(e, type, data = {}) {
+          const event = new CustomEvent('new-event', {
+            detail: {
+              type,
+              data
+            }
+          });
+          this.dispatchEvent(event);
+        }
+        /**
+         * Implement `render` to define a template for your element.
+         */
+
+      }, {
+        kind: "method",
+        key: "render",
+        value: function render() {
+          return html`
+      <div class="card-front">
+        <div class="asset-action-info"><svg @click="${e => this.eventHandler(e, 'flip')}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="white"/><path id="info-icon"fill="rgb(82, 87, 89)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+        <div class="asset-image-container">
+          <img src="https://lh3.googleusercontent.com/kALS3ONoHIo_gbtXDiTiq365fzs6rQt7LnIz1unhqZxeHtqVv8zBu1dmh9mtmOx2Xl55B6bYocjTUBLqYUY99_o9=s250" />
+        </div>
+        <div class="asset-details-container">
+          <div class="asset-detail">
+            <div class="pill-container asset-detail-type">
+              <pill-element
+                imageUrl="https://storage.opensea.io/0x06012c8cf97bead5deae237070f9587f8e7a266d-featured-1556588705.png"
+                label="CryptoKitties"
+                textColor="#828282"
+                border="1px solid #E2E6EF"
+              ></pill-element>
+            </div>
+            <!-- TODO: This badge is optional and must be rendered programmatically -->
+            <div class="pill-container asset-detail-badge">
+              <pill-element
+                label="New"
+                backgroundColor="#23DC7D"
+                textColor="#FFFFFF"
+              ></pill-element>
+            </div>
+          </div>
+          <div class="spacer"></div>
+          <div class="asset-detail-name">
+            <p>G7 Tigerpunk Persian with a very long name</p>
+          </div>
+          <div class="asset-detail-price">
+            <div class="asset-detail-price-current">Ξ 0.04</div>
+            <div class="asset-detail-price-previous">Prev. Ξ 0.04</div>
+          </div>
+          <div class="asset-action-buy">
+            <button @click="${e => this.eventHandler(e, 'buy', {
+          buy: 'buyit'
+        })}" >BUY THIS ITEM ❯</button>
+          </div>
+
+        </div>
+      </div>
+    `;
+        }
+      }]
+    };
+  }, LitElement);
+
+  /**
+   * Use the customElement decorator to define your class as
+   * a custom element. Registers <nft-card-back> as an HTML tag.
+   */
+
+  let NftCardBackTemplate = _decorate([customElement('nft-card-back')], function (_initialize, _LitElement) {
+    class NftCardBackTemplate extends _LitElement {
+      constructor(...args) {
+        super(...args);
+
+        _initialize(this);
+      }
+
+    }
+
+    return {
+      F: NftCardBackTemplate,
+      d: [{
+        kind: "field",
+        decorators: [property({
+          type: String
+        })],
+        key: "orientation",
+
+        value() {
+          return 'vertical';
+        }
+
+      }, {
+        kind: "get",
+        static: true,
+        key: "styles",
+        value:
+        /**
+         * Create an observed property. Triggers update on change.
+         */
+        // @TODO: Add dynamic styles based on orientation prop
+        function styles() {
+          return css`
+      .card-back {
+        position: absolute;
+        backface-visibility: hidden;
+        width: 100%;
+        height: 100%;
+        transform: rotateY(180deg);
+        top: 0;
+        /* background: aliceblue; */
+      }
+    `;
+        }
+        /**
+         * Implement `render` to define a template for your element.
+         */
+
+      }, {
+        kind: "method",
+        key: "render",
+        value: function render() {
+          /**
+           * Use JavaScript expressions to include property values in
+           * the element template.
+           */
+          return html`
+      <div class="card-back">
+      hello
+      </div>
+    `;
+        }
+      }]
+    };
+  }, LitElement);
+
+  /**
+   * Use the customElement decorator to define your class as
+   * a custom element. Registers <nft-card> as an HTML tag.
    */
 
   let NftCard = _decorate([customElement('nft-card')], function (_initialize, _LitElement) {
@@ -3224,6 +3486,17 @@
         }
 
       }, {
+        kind: "field",
+        decorators: [property({
+          type: String
+        })],
+        key: "flippedCard",
+
+        value() {
+          return false;
+        }
+
+      }, {
         kind: "get",
         static: true,
         key: "styles",
@@ -3238,78 +3511,58 @@
           margin: 0;
         }
         .card {
-          background: #FFFFFF;
-          box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.25);
-          border-radius: 5px;
-          display: grid;
-          grid-template-columns: 1fr 2fr;
-          position: relative;
+          background-color: transparent;
           font-family: 'Roboto', sans-serif;
           font-style: normal;
           font-weight: normal;
+          border-radius: 5px;
+          perspective: 1000px;
        }
-       .asset-image-container {
-         border-right: 1px solid #E2E6EF;
-       }
-       .asset-details-container {
-         display: grid;
-         grid-template-rows: auto auto auto;
-         grid-template-columns: 2fr 1fr;
-         margin: 25px;
-         align-items: center;
-       }
-       .asset-detail {
-         display: flex;
-       }
-       .asset-detail .asset-detail-type {
-         width: 115px;
-         height: 30px;
-         font-size: 12px;
-         margin-right: 10px;
-       }
-       .asset-detail .asset-detail-badge {
-         width: 54px;
-         height: 30px;
-         font-size: 12px;
-       }
-       .asset-detail-name {
-         font-weight: 300;
-       }
-       .asset-detail-price {
-         text-align: right;
-       }
-       .asset-detail-price-current {
-         font-size: 18px;
-         font-weight: 400;
-       }
-       .asset-detail-price-previous {
-         font-size: 14px;
-         color: #828282;
-       }
-       .asset-action-buy {
-         grid-column-start: 1;
-         grid-column-end: 3;
-       }
-       .asset-action-buy button {
-         width: 100%;
-         background: #3291E9;
-         border-radius: 5px;
-         height: 35px;
-         color: white;
-         font-weight: bold;
-         letter-spacing: .5px;
-         cursor: pointer;
-         transition: 200ms;
-         outline: none;
-         border-style: none;
-       }
-       .asset-action-buy button:hover {
-         background: rgb(21, 61, 98);
-       }
-       .asset-action-goto-back {
-
-       }
+       .card-inner {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          text-align: center;
+          transition: transform 0.6s;
+          transform-style: preserve-3d;
+          box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.25);
+          border-radius: 5px;
+      }
+      .flipped-card .card-inner {
+        transform: rotateY(180deg);
+      }
     `;
+        }
+      }, {
+        kind: "method",
+        key: "buyEvent",
+        value: function buyEvent(data) {
+          console.log(data);
+        }
+      }, {
+        kind: "method",
+        key: "flipCard",
+        value: function flipCard(data) {
+          console.log('flip it');
+          this.flippedCard = !this.flippedCard;
+        }
+      }, {
+        kind: "method",
+        key: "eventHandler",
+        value: function eventHandler(event) {
+          const {
+            detail
+          } = event;
+
+          switch (detail.type) {
+            case 'buy':
+              this.buyEvent(detail.data);
+              break;
+
+            case 'flip':
+              this.flipCard();
+              break;
+          }
         }
         /**
          * Implement `render` to define a template for your element.
@@ -3324,45 +3577,16 @@
            * the element template.
            */
           return html`
-    <style>
-      @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
-    </style>
-    <div class="card">
-      <div class="asset-image-container">
-        <img src="https://lh3.googleusercontent.com/kALS3ONoHIo_gbtXDiTiq365fzs6rQt7LnIz1unhqZxeHtqVv8zBu1dmh9mtmOx2Xl55B6bYocjTUBLqYUY99_o9=s250" />
+      <style>
+        @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+      </style>
+      <div class="card ${this.flippedCard ? 'flipped-card' : ''}">
+        <div class="card-inner">
+          <nft-card-front @new-event="${this.eventHandler}" ></nft-card-front>
+          <nft-card-back></nft-card-back>
+        </div>
       </div>
-      <div class="asset-details-container">
-        <div class="asset-detail">
-          <div class="pill-container asset-detail-type">
-            <pill-element
-              imageUrl="https://storage.opensea.io/0x06012c8cf97bead5deae237070f9587f8e7a266d-featured-1556588705.png"
-              label="CryptoKitties"
-              textColor="#828282"
-              border="1px solid #E2E6EF"
-            ></pill-element>
-          </div>
-          <div class="pill-container asset-detail-badge">
-            <pill-element
-              label="New"
-              backgroundColor="#23DC7D"
-              textColor="#FFFFFF"
-            ></pill-element>
-          </div>
-        </div>
-        <div class="spacer"></div>
-        <div class="asset-detail-name">
-          <p>G7 Tigerpunk Persian with a very long name</p>
-        </div>
-        <div class="asset-detail-price">
-          <div class="asset-detail-price-current">Ξ 0.04</div>
-          <div class="asset-detail-price-previous">Prev. Ξ 0.04</div>
-        </div>
-        <div class="asset-action-buy">
-          <button>BUY THIS ITEM ❯</button>
-        </div>
-
-      </div>
-    </div>`;
+    `;
         }
       }]
     };

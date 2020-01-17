@@ -56,6 +56,7 @@ export class pillTemplate extends LitElement {
         margin: 0;
          /* Centers text since grid-template-columns auto has glitch */
         transform: translateX(-10%);
+        backface-visibility: inherit;
       }
       .no-img {
         grid-template-columns: 100%;
