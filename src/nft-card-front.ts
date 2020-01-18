@@ -6,6 +6,9 @@ import {
   LitElement, html, customElement, property, css,
 } from 'lit-element';
 
+// import '@polymer/iron-icon/iron-icon.js';
+// import '@polymer/iron-icons/iron-icons.js';
+
 /**
  * Use the customElement decorator to define your class as
  * a custom element. Registers <nft-card-front> as an HTML tag.
@@ -29,6 +32,8 @@ export class NftCardFrontTemplate extends LitElement {
         position: relative;
         width: 100%;
         height: 100%;
+        /* Remove when done with back face */
+        transform: rotateY(180deg);
 
       }
       .asset-image-container {
@@ -98,7 +103,7 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-action-info #info-icon {
         cursor: pointer;
         transition: 200ms;
-        opacity: .7;
+        opacity: .4;
         backface-visibility: hidden;
       }
       .asset-action-info #info-icon:hover {
@@ -130,7 +135,8 @@ export class NftCardFrontTemplate extends LitElement {
   render() {
     return html`
       <div class="card-front">
-        <div class="asset-action-info"><svg @click="${(e) => this.eventHandler(e, 'flip')}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="white"/><path id="info-icon"fill="rgb(82, 87, 89)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+        <div class="asset-action-info">
+        <svg @click="${(e) => this.eventHandler(e, 'flip')}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="white"/><path id="info-icon"fill="rgb(82, 87, 89)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
         <div class="asset-image-container">
           <img src="https://lh3.googleusercontent.com/kALS3ONoHIo_gbtXDiTiq365fzs6rQt7LnIz1unhqZxeHtqVv8zBu1dmh9mtmOx2Xl55B6bYocjTUBLqYUY99_o9=s250" />
         </div>

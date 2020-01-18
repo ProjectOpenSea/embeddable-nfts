@@ -55,7 +55,7 @@ export class pillTemplate extends LitElement {
         align-self: center;
         margin: 0;
          /* Centers text since grid-template-columns auto has glitch */
-        transform: translateX(-10%);
+        /* transform: translateX(-10%); */
         backface-visibility: inherit;
       }
       .no-img {
@@ -63,7 +63,7 @@ export class pillTemplate extends LitElement {
       }
       .no-img p {
          /* Reverts transform (see above) */
-        transform: none;
+        /* transform: none; */
       }
     `;
   }

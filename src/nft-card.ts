@@ -30,6 +30,7 @@ export class NftCard extends LitElement {
     return css`
         p {
           margin: 0;
+          -webkit-font-smoothing: antialiased;
         }
         .card {
           background-color: transparent;
@@ -50,7 +51,7 @@ export class NftCard extends LitElement {
           border-radius: 5px;
       }
       .flipped-card .card-inner {
-        transform: rotateY(180deg);
+        /* transform: rotateY(180deg); */
       }
     `;
   }
@@ -81,8 +82,9 @@ export class NftCard extends LitElement {
      * the element template.
      */
     return html`
+
       <style>
-        @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+        @import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500&display=swap');
       </style>
       <div class="card ${this.flippedCard ? 'flipped-card' : ''}">
         <div class="card-inner">
