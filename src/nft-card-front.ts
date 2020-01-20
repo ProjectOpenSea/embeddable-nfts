@@ -164,8 +164,8 @@ export class NftCardFrontTemplate extends LitElement {
 
 	connectedCallback() {
 		super.connectedCallback();
-		setTimeout(() => this.eventHandler('','flip'), 10);
-		console.warn('I flip card for testing remove me later')
+		// setTimeout(() => this.eventHandler('','flip'), 10);
+		// console.warn('I flip card for testing remove me later')
 	}
 
 	updated(changedProperties: array) {
