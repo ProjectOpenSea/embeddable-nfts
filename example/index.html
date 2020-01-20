@@ -19,7 +19,6 @@
     }
     .card-container {
       width: 670px;
-      height: 160px;
       margin: auto;
       padding-top: 5vh;
     }
@@ -28,7 +27,26 @@
 <body>
   <h1>OpenSea's Embeddable Nft!</h1>
   <div class="card-container">
-    <nft-card></nft-card>
+    <nft-card
+      vertical
+      contractAddress="0x7dca125b1e805dc88814aed7ccc810f677d3e1db"
+      tokenId="18"
+      network="rinkeby"
+      >
+
+    </nft-card>
+
+    <div style="padding-top: 5vh;"></div>
+
+    <nft-card
+      width="100%"
+      height="250px"
+      contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
+      tokenId="2242579050293992223"
+      network="mainnet"
+      >
+    </nft-card>
+    <div style="padding-top: 5vh;"></div>
   </div>
 </body>
 </html>

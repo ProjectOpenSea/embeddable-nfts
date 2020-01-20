@@ -1,0 +1,4 @@
+.gitignore
+/dist
+.git
+/example

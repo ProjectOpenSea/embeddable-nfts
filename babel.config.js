@@ -1,16 +1,16 @@
 const presets = [
-  "@babel/preset-typescript",
+  '@babel/preset-typescript',
   [
-    "@babel/preset-env",
+    '@babel/preset-env',
     {
-      "targets": "last 2 Chrome version",
-      "modules": false
+      targets: 'last 2 Chrome version',
+      modules: false
     }
   ]
 ]
 const plugins = [
   '@babel/plugin-proposal-class-properties',
-  ['@babel/proposal-decorators', { decoratorsBeforeExport: true } ],
-];
+  ['@babel/proposal-decorators', {decoratorsBeforeExport: true}]
+]
 
-module.exports = { plugins, presets };
+module.exports = {plugins, presets}
