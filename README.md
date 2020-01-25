@@ -3,24 +3,23 @@ Easily embed OpenSea listings in your website!
 
 ### Component inputs
 
-`vertical` - If this is present the card will be rendered vertically.
+`horizontal` - If this is present, the card will be rendered horizontally.
 
-`width` - The width of the embeddable. Ex. values `100%` `250px`
+`width` - The width of the embeddable. Ex. values `100%` `250px`. Default: `388px`
 
-`height` - The height of the embeddable. Ex. values `40vh` `300px`
+`height` - The height of the embeddable. Ex. values `40vh` `300px`. Default: `560px`
 
-`contractAddress`\*- The token Id of the asset.
+`contractAddress`\*- The token's contract address.
 
 `tokenId`\* - The token Id of the asset.
 
-`network` - The name of the network the asset is on `mainnet` or `rinkeby`. Defaults to `mainnet`.
+`network` - The name of the network the asset is on `mainnet` or `rinkeby`. Default: `mainnet`.
 
 \*Required inputs
 
 Example:
 ```
 <nft-card
-  vertical
   width="100%"
   height="250px"
   contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"

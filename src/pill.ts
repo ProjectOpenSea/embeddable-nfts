@@ -2,9 +2,9 @@
  * Import LitElement base class, html helper function,
  * and TypeScript decorators
  **/
-import {LitElement, html, customElement, property, css} from 'lit-element';
+import {LitElement, html, customElement, property, css} from 'lit-element'
 
-import {styleMap} from 'lit-html/directives/style-map';
+import {styleMap} from 'lit-html/directives/style-map'
 
 /**
  * Use the customElement decorator to define your class as
@@ -12,15 +12,15 @@ import {styleMap} from 'lit-html/directives/style-map';
  */
 @customElement('pill-element')
 export class pillTemplate extends LitElement {
-	/**
+  /**
    * Create an observed property. Triggers update on change.
    */
-  @property({type: String}) imageUrl;
-  @property({type: String}) label;
-  @property({type: String}) backgroundColor;
-  @property({type: String}) textColor;
-  @property({type: String}) border = 'none';
-  @property({type: Object}) customStyles = {
+  @property({type: String}) public imageUrl
+  @property({type: String}) public label
+  @property({type: String}) public backgroundColor
+  @property({type: String}) public textColor
+  @property({type: String}) public border = 'none'
+  @property({type: Object}) public customStyles = {
     backgroundColor: this.backgroundColor,
     color: this.textColor,
     border: this.border
@@ -63,13 +63,13 @@ export class pillTemplate extends LitElement {
         /* Reverts transform (see above) */
         /* transform: none; */
       }
-    `;
+    `
   }
 
   /**
    * Implement `render` to define a template for your element.
    */
-  render() {
+  public render() {
     /**
      * Use JavaScript expressions to include property values in
      * the element template.
@@ -78,14 +78,14 @@ export class pillTemplate extends LitElement {
       <div
         class="pill ${this.imageUrl ? '' : 'no-img'}"
         style="${styleMap({
-		backgroundColor: this.backgroundColor,
-          color: this.textColor,
-		border: this.border
-	})}"
+    backgroundColor: this.backgroundColor,
+    color: this.textColor,
+    border: this.border
+  })}"
       >
         ${this.imageUrl ? html`<img src="${this.imageUrl}"></img>` : ''}
         <p>${this.label}</p>
       </div>
-    `;
+    `
   }
 }

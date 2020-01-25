@@ -1,4 +1,4 @@
 .gitignore
-/dist
+dist
 .git
-/example
+example

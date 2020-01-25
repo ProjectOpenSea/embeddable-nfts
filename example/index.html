@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <script src="/node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js"></script>
-  <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-  <script src="/dist/nft-card.js" defer></script>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
+    <script src="/node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js"></script>
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <script defer src="/dist/nft-card.js"></script>
 
-  <title>OpenSea Embeddable NFT example</title>
-  <style media="screen">
+    <title>OpenSea Embeddable NFT example</title>
+    <style media="screen">
     h1 {
       font-family: Avenir,Helvetica,Arial,sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -22,31 +22,31 @@
       margin: auto;
       padding-top: 5vh;
     }
-  </style>
+
+    </style>
 </head>
 <body>
-  <h1>OpenSea's Embeddable Nft!</h1>
-  <div class="card-container">
+<h1>OpenSea's Embeddable Nft!</h1>
+<div class="card-container">
     <nft-card
-      vertical
-      contractAddress="0x7dca125b1e805dc88814aed7ccc810f677d3e1db"
-      tokenId="18"
-      network="rinkeby"
-      >
-
+            contractAddress="0x7dca125b1e805dc88814aed7ccc810f677d3e1db"
+            network="rinkeby"
+            tokenId="18"
+    >
     </nft-card>
 
     <div style="padding-top: 5vh;"></div>
 
     <nft-card
-      width="100%"
-      height="250px"
-      contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
-      tokenId="2242579050293992223"
-      network="mainnet"
-      >
+            contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
+            height="250px"
+            horizontal
+            network="mainnet"
+            tokenId="2242579050293992223"
+            width="100%"
+    >
     </nft-card>
     <div style="padding-top: 5vh;"></div>
-  </div>
+</div>
 </body>
 </html>

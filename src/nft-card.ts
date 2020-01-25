@@ -2,15 +2,14 @@ import {LitElement, html, customElement, property, css} from 'lit-element'
 import {styleMap} from 'lit-html/directives/style-map'
 import {classMap} from 'lit-html/directives/class-map'
 
-import Web3 from 'web3';
-import {OpenSeaPort, Network, OpenSeaAsset} from 'opensea-js';
+import Web3 from 'web3'
+import {OpenSeaPort, Network, OpenSeaAsset} from 'opensea-js'
 import { OrderSide } from 'opensea-js/lib/types'
 
 /* lit-element clases */
 import './pill.ts'
 import './nft-card-front.ts'
 import './nft-card-back.ts'
-
 
 /**
  * Nft-card element that manages front & back of card.
@@ -21,93 +20,8 @@ import './nft-card-back.ts'
 @customElement('nft-card')
 export class NftCard extends LitElement {
 
-  /* User configurable propties */
-	@property({type: Boolean}) vertical
-	@property({type: String})  contractAddress
-	@property({type: String})  tokenId
-	@property({type: String})  width = '388px'
-	@property({type: String})  height = '560px'
-	@property({type: String})  network = 'mainnet'
-
-	@property({type: String})  flippedCard = false
-	@property({type: Boolean}) loading = true
-
-
-	@property({type: Object})  asset;
-	@property({type: Object})  traitData = {}
-  @property({type: String})  account;
-
-
-	getNetwork() {
-		switch (this.network) {
-			case 'mainnet': return Network.Main;
-			case 'rinkeby': return Network.Rinkeby;
-		}
-	}
-
-	constructor() {
-		super();
-	}
-
-	/**
-   * ConnectedCallback - Invoked when a component is added to the document’s DOM.
-   * Grabs data from the OpenSea SDK and populates data objects to be passed to
-   * child components.
-   */
-	async connectedCallback() {
-		super.connectedCallback();
-    this.provider =
-      typeof web3 !== 'undefined'
-        ? window.web3.currentProvider
-        : Web3.providers.HttpProvider('https://mainnet.infura.io');
-
-    this.web3 = new Web3(this.provider)
-		this.seaport = new OpenSeaPort(this.provider, {networkName: this.getNetwork()})
-		await this.connectWallet();
-		this.asset = await this.seaport.api.getAsset(this.contractAddress, this.tokenId);
-
-    [this.account] = await this.web3.eth.getAccounts()
-
-    // TODO: Check if account exists
-    this.asset.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
-
-		this.traitData = {
-			traits: this.asset.traits,
-			collectionTraits: this.asset.collection.traitStats
-		};
-
-		// We got the data so we are done loading
-		this.loading = false
-
-		// Tell the component to update with new state
-		await this.requestUpdate();
-
-    // Watch for the account to change then update state of component
-    window.ethereum.on('accountsChanged', function (accounts) {
-      [this.account] = accounts
-    })
-	}
-
-
-
-	/**
-	 * async connectWallet - Initializes connection to the injected web3 account
-	 */
-	private async connectWallet() {
-		if (!window.web3) {
-			//
-		} else if (window.ethereum) {
-			window.ethereum.enable();
-		} else {
-			const errorMessage =
-        'You need an Ethereum wallet to interact with this marketplace. Unlock your wallet, get MetaMask.io or Portis on desktop, or get Trust Wallet or Coinbase Wallet on mobile.';
-			alert(errorMessage);
-			throw new Error(errorMessage);
-		}
-	}
-
-	static get styles() {
-		return css`
+  static get styles() {
+    return css`
       p {
         margin: 0;
         -webkit-font-smoothing: antialiased;
@@ -136,9 +50,77 @@ export class NftCard extends LitElement {
         transform: rotateY(180deg);
       }
     `
-	}
+  }
 
-	async buyEvent(data) {
+  /* User configurable properties */
+  @property({type: Boolean}) public horizontal = false
+  @property({type: String})  public contractAddress
+  @property({type: String})  public tokenId
+  @property({type: String})  public width = this.horizontal ? '670px' : '388px'
+  @property({type: String})  public height = this.horizontal ? '250px' : '560px'
+  @property({type: String})  public network = 'mainnet'
+
+  @property({type: String})  private flippedCard = false
+  @property({type: Boolean}) private loading = true
+
+  @property({type: Object})  public asset
+  @property({type: Object})  public traitData = {}
+  @property({type: String})  public account
+
+  private getNetwork() {
+    switch (this.network) {
+      case 'mainnet': return Network.Main
+      case 'rinkeby': return Network.Rinkeby
+    }
+  }
+
+  constructor() {
+    super()
+  }
+
+  /**
+   * ConnectedCallback - Invoked when a component is added to the document’s DOM.
+   * Grabs data from the OpenSea SDK and populates data objects to be passed to
+   * child components.
+   */
+  public async connectedCallback() {
+    super.connectedCallback()
+    this.provider =
+      typeof web3 !== 'undefined'
+        ? window.web3.currentProvider
+        : Web3.providers.HttpProvider('https://mainnet.infura.io')
+
+    this.web3 = new Web3(this.provider)
+    this.seaport = new OpenSeaPort(this.provider, {networkName: this.getNetwork()})
+    await this.connectWallet()
+    this.asset = await this.seaport.api.getAsset(this.contractAddress, this.tokenId);
+
+    [this.account] = await this.web3.eth.getAccounts()
+
+    // TODO: Check if account exists
+    if(this.account) {
+        this.asset.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
+    }
+
+    this.traitData = {
+      traits: this.asset.traits,
+      collectionTraits: this.asset.collection.traitStats
+    }
+
+    // We got the data so we are done loading
+    this.loading = false
+
+    // Tell the component to update with new state
+    await this.requestUpdate()
+
+    // Watch for the account to change then update state of component
+    window.ethereum.on('accountsChanged', function(accounts) {
+      [this.account] = accounts
+      console.log("accountsChanged",  accounts)
+    })
+  }
+
+  public async buyEvent(data) {
 
     const order = await this.seaport.api.getOrder({
       side: OrderSide.Sell,
@@ -147,39 +129,39 @@ export class NftCard extends LitElement {
      })
 
      // The buyer's wallet address, also the taker
-     const accountAddress = this.account
-     await this.seaport.fulfillOrder({ order, accountAddress })
-	}
+    const accountAddress = this.account
+    await this.seaport.fulfillOrder({ order, accountAddress })
+  }
 
-	flipCard(data) {
-		this.flippedCard = !this.flippedCard
-	}
+  public flipCard(data) {
+    this.flippedCard = !this.flippedCard
+  }
 
-	eventHandler(event) {
-		const {detail} = event;
-		switch (detail.type) {
+  public eventHandler(event) {
+    const {detail} = event
+    switch (detail.type) {
       case 'view':
       case 'manage':
         this.goToOpenSea()
         break
-			case 'buy':
+      case 'buy':
         this.buyEvent(detail.data)
         break
-			case 'flip':
+      case 'flip':
         this.flipCard()
         break
-		}
-	}
-
-  goToOpenSea() {
-    window.open(this.asset.openseaLink, '_blank');
+    }
   }
 
-	/**
+  public goToOpenSea() {
+    window.open(this.asset.openseaLink, '_blank')
+  }
+
+  /**
    * Implement `render` to define a template for your element.
    */
-	render() {
-		/**
+  public render() {
+    /**
      * Use JavaScript expressions to include property values in
      * the element template.
      */
@@ -198,13 +180,13 @@ export class NftCard extends LitElement {
             :
             html`
             <nft-card-front
-              .vertical=${this.vertical}
+              .horizontal=${this.horizontal}
               @new-event="${this.eventHandler}"
               .asset=${this.asset}
               .account=${this.account}
             ></nft-card-front>
             <nft-card-back
-              .vertical=${this.vertical}
+              .horizontal=${this.horizontal}
               .traitData=${this.traitData}
             ></nft-card-back>
             `
@@ -212,4 +194,20 @@ export class NftCard extends LitElement {
        </div>
      `
    }
+
+  /**
+	  * async connectWallet - Initializes connection to the injected web3 account
+	  */
+  private async connectWallet() {
+    if (!window.web3) {
+      //
+    } else if (window.ethereum) {
+      window.ethereum.enable()
+    } else {
+      const errorMessage =
+        'You need an Ethereum wallet to interact with this marketplace. Unlock your wallet, get MetaMask.io or Portis on desktop, or get Trust Wallet or Coinbase Wallet on mobile.'
+      alert(errorMessage)
+      throw new Error(errorMessage)
+    }
+  }
 }

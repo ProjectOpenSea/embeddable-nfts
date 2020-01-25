@@ -5,108 +5,17 @@ import {classMap} from 'lit-html/directives/class-map'
 enum TraitType {
   Property = 'prop',
   Stat = 'stat',
-	Ranking = 'ranking',
-	Boost = 'boost',
+  Ranking = 'ranking',
+  Boost = 'boost',
 }
 
-const TRAIT_HEIGHT = 40;
+const TRAIT_HEIGHT = 40
 
 @customElement('nft-card-back')
 export class NftCardBackTemplate extends LitElement {
-  /**
-   * Create an observed property. Triggers update on change.
-   */
-	@property({type: Object}) traitData = {}
-	@property({type: Boolean}) loading = true
-	@property({type: Boolean}) vertical
 
-	@property({type: Number}) cardHeight
-
-	private buildTraits(traitData) {
-		this.traits = {
-      props: [],
-      stats: [],
-      rankings: [],
-      boosts: []
-		};
-    const {traits, collectionTraits} = this.traitData;
-
-		for(const trait of traits) {
-      const type = this.getTraitType(trait, collectionTraits);
-
-			const name = trait.trait_type;
-      this.traits[type + 's'].push({
-				name,
-        value: trait.value,
-				...(type === TraitType.Ranking ? { max: collectionTraits[name].max } : {})
-			});
-    }
-	}
-
-	private getTraitType(trait: object, collectionTraits: object) {
-		if (this.isProperty(trait, collectionTraits)) return TraitType.Property;
-		if (this.isStat(trait)) return TraitType.Stat;
-		if (this.isRanking(trait, collectionTraits)) return TraitType.Ranking;
-		if (this.isBoost(trait)) return TraitType.Boost;
-	}
-
-	private isBoost(trait: object) {
-		return trait.display_type.includes('boost');
-	}
-
-	private isRanking(trait: object, collectionTraits: object) {
-		return (
-      trait.display_type === null && 'max' in collectionTraits[trait.trait_type]
-	}
-
-
-	/**
-   * IsStat - Checks to see if the given trait is a 'Stat'
-   * A 'Stat' is defined as any trait that has a `display_type` of 'number'
-   *
-   * @param  {type} trait - The object containing an asset's trait
-   * @return {boolean} true if the trait is a 'Stat' and false otherwise
-   */
-	private isStat(trait: object) {
-		return trait.display_type === 'number';
-	}
-
-	/**
-   * IsProperty - Checks to see if the given trait is a 'Property'.
-   * A 'Property' is defined as any trait that has a `display_type` of null
-   * and does not have a min/max value
-   *
-   * @param  {object} trait - The object containing an asset's trait
-   * @return {boolean} true if the trait is a 'Property' and false otherwise
-   */
-	private isProperty(trait: object, collectionTraits: object) {
-		return (
-      trait.display_type === null &&
-      !('max' in collectionTraits[trait.trait_type])
-    );
-	}
-
-	updated(changedProperties: array) {
-		// Assumption: If the traitData gets updated we should rebuild the
-		// traits object that populates UI
-		// Assumption: This will ONLY get called once per refresh
-		changedProperties.forEach((oldValue, propName) => {
-			if (propName === 'traitData') {
-				this.buildTraits(this.traitData);
-
-				// We got the data so we are done loading
-				this.loading = false
-
-				// Tell the component to update with new state
-				this.requestUpdate()
-			}
-		})
-		// Console.log(this.shadowRoot.firstElementChild.offsetHeight)
-	}
-
-
-	static get styles() {
-		return css`
+  static get styles() {
+    return css`
       .card-back {
         position: absolute;
         backface-visibility: hidden;
@@ -257,11 +166,35 @@ export class NftCardBackTemplate extends LitElement {
         color: #ffffff;
       }
     `
-	}
+  }
 
-	getBoostsTemplate(boosts) {
-    if(boosts.length <= 0) return // Don't render if empty array
-		return html`
+  @property({type: Object}) public traitData = {}
+  @property({type: Boolean}) public loading = true
+  @property({type: Boolean}) public horizontal
+
+  @property({type: Number}) public cardHeight
+
+  public updated(changedProperties: array) {
+    // Assumption: If the traitData gets updated we should rebuild the
+    // traits object that populates UI
+    // Assumption: This will ONLY get called once per refresh
+    changedProperties.forEach(async (oldValue, propName) => {
+      if (propName === 'traitData') {
+        this.buildTraits(this.traitData)
+
+        // We got the data so we are done loading
+        this.loading = false
+
+        // Tell the component to update with new state
+        await this.requestUpdate()
+      }
+    })
+    // Console.log(this.shadowRoot.firstElementChild.offsetHeight)
+  }
+
+  public getBoostsTemplate(boosts) {
+    if (boosts.length <= 0) { return } // Don't render if empty array
+    return html`
       <div class="trait-header">
         <div class="trait-icon">
           <svg
@@ -292,10 +225,10 @@ export class NftCardBackTemplate extends LitElement {
         `
       )}
     `
-	}
+  }
 
-	getStatsTemplate(stats) {
-		return html`
+  public getStatsTemplate(stats) {
+    return html`
       <div class="trait-header">
         <div class="trait-icon">
           <svg
@@ -318,16 +251,16 @@ export class NftCardBackTemplate extends LitElement {
             <div class="stat">
               <div class="stat-value">${stat.value}</div>
               <div class="stat-name">
-                ${stat.name.replace(/_/g, ' ')}
+                ${this.formatTrait(stat.name)}
               </div>
             </div>
           `
       }
     `
-	}
+  }
 
-	getRankingsTemplate(rankings) {
-		return html`
+  public getRankingsTemplate(rankings) {
+    return html`
       <div class="trait-header">
         <div class="trait-icon">
           <svg
@@ -363,36 +296,29 @@ export class NftCardBackTemplate extends LitElement {
         `
       )}
     `
-	}
+  }
 
-	getPropsTemplate(props) {
-		const DISPLAY_MAX = 3
-		const propsTemplate = []
-		for (let i = 0; i < props.length && i < DISPLAY_MAX; i++) {
-			propsTemplate.push(html`
+  public getPropsTemplate(props) {
+    const DISPLAY_MAX = 3
+    const propsTemplate = []
+    for (let i = 0; i < props.length && i < DISPLAY_MAX; i++) {
+      propsTemplate.push(html`
         <div class="trait_property">
           <p class="trait_property-type">${this.formatTrait(props[i].name)}</p>
           <p class="trait_property-value">${props[i].value}</p>
         </div>
-      `);
-		}
+      `)
+    }
 
-		return propsTemplate;
-	}
+    return propsTemplate
+  }
 
-	formatTrait(trait) {
-		return trait.replace(/_/g, ' ');
-	}
-
-	/**
-   * Implement `render` to define a template for your element.
-   */
-	render() {
-		// TODO: Add loading templates
-		return html`
+  public render() {
+    // TODO: Add loading templates
+    return html`
       <div class="card-back">
         <div
-          class="card-back-inner ${classMap({'is-vertical': this.vertical})}"
+          class="card-back-inner ${classMap({'is-vertical': !this.horizontal})}"
         >
           <div class="attribute-container attribute-properties">
             <div class="trait-header">
@@ -414,11 +340,11 @@ export class NftCardBackTemplate extends LitElement {
             </div>
             ${this.loading ? '' : this.getPropsTemplate(this.traits.props)}
           </div>
-          <!-- TODO: Add conditional class based on if it's a rank or stat -->
+
           <div class="attribute-container">
             ${this.loading  ? 'loadingTemplate()' :
-		this.traits.rankings.length > 0 ? this.getRankingsTemplate(this.traits.rankings)
-			: this.getStatsTemplate(this.traits.stats)
+    this.traits.rankings.length > 0 ? this.getRankingsTemplate(this.traits.rankings)
+      : this.getStatsTemplate(this.traits.stats)
           }
           </div>
           <div class="attribute-container attribute-boosts">
@@ -430,5 +356,72 @@ export class NftCardBackTemplate extends LitElement {
         </div>
       </div>
     `
-	}
+  }
+
+  private formatTrait(trait) {
+    return trait.replace(/_/g, ' ')
+  }
+
+  private buildTraits(traitData) {
+    this.traits = {
+      props: [],
+      stats: [],
+      rankings: [],
+      boosts: []
+    }
+    const {traits, collectionTraits} = this.traitData
+
+    for (const trait of traits) {
+      const type = this.getTraitType(trait, collectionTraits)
+
+      const name = trait.trait_type
+      this.traits[type + 's'].push({
+        name,
+        value: trait.value,
+        ...(type === TraitType.Ranking ? { max: collectionTraits[name].max } : {})
+      })
+    }
+  }
+
+  private getTraitType(trait: object, collectionTraits: object) {
+    if (this.isProperty(trait, collectionTraits)) { return TraitType.Property }
+    if (this.isStat(trait)) { return TraitType.Stat }
+    if (this.isRanking(trait, collectionTraits)) { return TraitType.Ranking }
+    if (this.isBoost(trait)) { return TraitType.Boost }
+  }
+
+  private isBoost(trait: object) {
+    return trait.display_type.includes('boost')
+  }
+
+  private isRanking(trait: object, collectionTraits: object) {
+    return (
+      trait.display_type === null && 'max' in collectionTraits[trait.trait_type]
+  }
+
+  /**
+   * IsStat - Checks to see if the given trait is a 'Stat'
+   * A 'Stat' is defined as any trait that has a `display_type` of 'number'
+   *
+   * @param trait - The object containing an asset's trait
+   * @return true if the trait is a 'Stat' and false otherwise
+   */
+  private isStat(trait: object) {
+    return trait.display_type === 'number'
+  }
+
+  /**
+   * IsProperty - Checks to see if the given trait is a 'Property'.
+   * A 'Property' is defined as any trait that has a `display_type` of null
+   * and does not have a min/max value
+   *
+   * @param trait - The object containing an asset's trait
+   * @return true if the trait is a 'Property' and false otherwise
+   */
+  private isProperty(trait: object, collectionTraits: object) {
+    return (
+      trait.display_type === null &&
+      !('max' in collectionTraits[trait.trait_type])
+    )
+  }
 }

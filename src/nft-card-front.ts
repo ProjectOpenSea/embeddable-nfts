@@ -1,7 +1,7 @@
 /**
  * Import LitElement base class, html helper function,
  * and TypeScript decorators
- **/
+ */
 import {LitElement, html, customElement, property, css} from 'lit-element'
 
 import {classMap} from 'lit-html/directives/class-map'
@@ -15,17 +15,13 @@ const BTN_TEXT = {
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
-  @property({type: Object}) asset = {}
-  @property({type: String}) acount;
-	@property({type: Object}) loading = true
-	@property({type: Boolean}) vertical
+  @property({type: Object}) public asset = {}
+  @property({type: String}) public account
+  @property({type: Object}) public loading = true
+  @property({type: Boolean}) public horizontal
 
-	constructor() {
-		super()
-	}
-
-	static get styles() {
-		return css`
+  static get styles() {
+    return css`
       .card-front {
         position: absolute;
         backface-visibility: hidden;
@@ -49,6 +45,12 @@ export class NftCardFrontTemplate extends LitElement {
 
       .asset-image-container {
         border-right: 1px solid #e2e6ef;
+        padding: 26px;
+        background-size: cover;
+        box-sizing: border-box;
+      }
+
+      .asset-image {
         background-size: contain;
         background-position: 50%;
         background-repeat: no-repeat;
@@ -58,19 +60,9 @@ export class NftCardFrontTemplate extends LitElement {
       .is-vertical .asset-image-container {
         border-bottom: 1px solid #e2e6ef;
         border-right: none;
-        height: min-content;
-        margin-top: 0;
-        height: 100%;
         width: 100%;
       }
-      .asset-image-container img {
-        width: 100%;
-      }
-      .is-vertical .asset-image-container img {
-        width: 100%;
-        height: 100%;
-        /* width: auto; */
-      }
+
       .asset-details-container {
         display: grid;
         grid-template-rows: auto;
@@ -143,16 +135,16 @@ export class NftCardFrontTemplate extends LitElement {
         opacity: 1;
       }
     `
-	}
+  }
 
-	/**
+  /**
    * EventHandler - Dispatch event allowing parent to handle click event
    *
-   * @param  {Object} e the event context
-   * @param  {string} type the event context
-   * @param  {Object} data the event context
+   * @param e the event context
+   * @param type the event context
+   * @param data the event context
    */
-	eventHandler(e, type, data = {}) {
+  public eventHandler(e, type, data = {}) {
     const event = new CustomEvent('new-event', {
       detail: {
         type,
@@ -160,25 +152,25 @@ export class NftCardFrontTemplate extends LitElement {
       }
     })
     this.dispatchEvent(event)
-	}
+  }
 
-	connectedCallback() {
-		super.connectedCallback();
-		// setTimeout(() => this.eventHandler('','flip'), 10);
-		// console.warn('I flip card for testing remove me later')
-	}
+  public connectedCallback() {
+    super.connectedCallback()
+    // setTimeout(() => this.eventHandler('','flip'), 10);
+    // console.warn('I flip card for testing remove me later')
+  }
 
-	updated(changedProperties: array) {
-		// Assumption: If the traitData gets updated we should rebuild the
-		// traits object that populates UI
-		// Assumption: This will ONLY get called once per refresh
-		changedProperties.forEach((oldValue, propName) => {
-			if (propName === 'asset') {
-				// We got the data so we are done loading
-				this.loading = false
+  public updated(changedProperties: array) {
+    // Assumption: If the traitData gets updated we should rebuild the
+    // traits object that populates UI
+    // Assumption: This will ONLY get called once per refresh
+    changedProperties.forEach((oldValue, propName) => {
+      if (propName === 'asset') {
+        // We got the data so we are done loading
+        this.loading = false
 
         // Check for a sell order to populate the UI with the sell information
-        if(this.asset.sellOrders.length > 0) {
+        if (this.asset.sellOrders.length > 0) {
           this.canBuy = true
           const order = this.asset.sellOrders[0]
           const token = order.paymentTokenContract
@@ -188,39 +180,37 @@ export class NftCardFrontTemplate extends LitElement {
           this.sellOrder = {
             token,
             currentPrice,
-            ...this.prevPrice,
             expires
           }
         }
 
-				// Tell the component to update with new state
-				this.requestUpdate()
-			}
-		})
-	}
+        // Tell the component to update with new state
+        this.requestUpdate()
+      }
+      console.log(oldValue, propName)
+    })
+  }
 
-
-
-  getAssetImageTemplate(imageUrl) {
-		return (html`
+  public getAssetImageTemplate(imageUrl) {
+    return (html`
       <div class="asset-image-container">
         <img src="${imageUrl}" />
       </div>
     `)
   }
 
-  getAssetPriceTemplate() {
+  public getAssetPriceTemplate() {
     // TODO: Needs to account for tokens with images not symbols
-    // Maybe change ethereum to an image instead of symbol?
+    // If payment_token.image_url then use token image instead of symbol
     let prevPriceTemplate = ''
     let currentPriceTemplate = ''
 
-    if(this.sellOrder) {
+    if (this.sellOrder) {
       const currentPriceSymbol = this.sellOrder.token.symbol === 'ETH' ? 'Ξ ' : ''
       currentPriceTemplate = html`<div class="asset-detail-price-current">${currentPriceSymbol} ${this.sellOrder.currentPrice}</div>`
     }
 
-    if(this.asset.lastSale) {
+    if (this.asset.lastSale) {
       const formattedPrevPrice = this.asset.lastSale.total_price / Math.pow(10, this.asset.lastSale.payment_token.decimals)
       const prevPriceSymbol = this.asset.lastSale.payment_token.symbol === 'ETH' ? 'Ξ ' : ''
       prevPriceTemplate = html`<div class="asset-detail-price-previous">Prev. ${prevPriceSymbol} ${formattedPrevPrice}</div>`
@@ -234,9 +224,9 @@ export class NftCardFrontTemplate extends LitElement {
     `)
   }
 
-  getButtonTemplate() {
-    let btnType;
-    if(this.asset.isOwnedByAccount) {
+  public getButtonTemplate() {
+    let btnType
+    if (this.asset.isOwnedByAccount) {
       btnType = 'manage'
     } else if (this.canBuy) {
       btnType = 'buy'
@@ -253,13 +243,13 @@ export class NftCardFrontTemplate extends LitElement {
     `
   }
 
-	/**
+  /**
    * Implement `render` to define a template for your element.
    */
-	render() {
-		if (this.isLoading) return html``;
-		return html`
-      <div class="card-front ${classMap({'is-vertical': this.vertical})}">
+  public render() {
+    if (this.isLoading) { return html`` }
+    return html`
+      <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
         <div class="asset-action-info">
           <svg
             id="info-btn"
@@ -278,10 +268,13 @@ export class NftCardFrontTemplate extends LitElement {
           </svg>
         </div>
 
-        <div
-          class="asset-image-container"
-          style=${styleMap({'background-image': `url(${this.asset.imageUrl})`})}
-        ></div>
+        <div class="asset-image-container">
+          <div
+            class="asset-image"
+            style=${styleMap({'background-image': `url(${this.asset.imageUrl})`})}
+          ></div>
+        </div>
+
         <div class="asset-details-container">
           <div class="asset-detail">
             <div class="pill-container asset-detail-type">
@@ -312,5 +305,5 @@ export class NftCardFrontTemplate extends LitElement {
         </div>
       </div>
     `
-	}
+  }
 }
