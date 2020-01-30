@@ -39,11 +39,12 @@ export class pillTemplate extends LitElement {
         border-radius: 60px;
         width: 100%;
         height: 100%;
-        padding: 2px;
+        padding: 6px 12px 6px 6px;
       }
       .pill img {
         height: 100%;
         border-radius: 50px;
+        margin-right: 6px;
         /* width: 100%; */
         /* padding: 3px; */
         /* box-sizing: border-box; */
@@ -52,6 +53,7 @@ export class pillTemplate extends LitElement {
         text-align: center;
         align-self: center;
         margin: auto;
+        white-space: nowrap;
         /* Centers text since grid-template-columns auto has glitch */
         /* transform: translateX(-10%); */
         backface-visibility: inherit;

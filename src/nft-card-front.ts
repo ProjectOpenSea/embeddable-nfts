@@ -32,8 +32,6 @@ export class NftCardFrontTemplate extends LitElement {
         position: relative;
         width: 100%;
         height: 100%;
-        /* Remove when done with back face */
-        /* display: none; */
       }
       .is-vertical {
         grid-template-columns: 1fr;
@@ -74,8 +72,7 @@ export class NftCardFrontTemplate extends LitElement {
         display: flex;
       }
       .asset-detail .asset-detail-type {
-        width: 100%;
-        height: 30px;
+        height: 35px;
         font-size: 12px;
         margin-right: 10px;
       }
@@ -277,7 +274,7 @@ export class NftCardFrontTemplate extends LitElement {
 
         <div class="asset-details-container">
           <div class="asset-detail">
-            <div class="pill-container asset-detail-type">
+            <div class="asset-detail-type">
               <pill-element
                 .imageUrl=${this.asset.assetContract.imageUrl}
                 .label=${this.asset.assetContract.name}
@@ -286,7 +283,7 @@ export class NftCardFrontTemplate extends LitElement {
               ></pill-element>
             </div>
             <!-- TODO: This badge is optional and must be rendered programmatically -->
-            <!-- <div class="pill-container asset-detail-badge">
+            <!-- <div class="asset-detail-badge">
               <pill-element
                 label="New"
                 backgroundColor="#23DC7D"

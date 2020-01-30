@@ -6,16 +6,20 @@
     <meta content="ie=edge" http-equiv="X-UA-Compatible">
     <script src="/node_modules/@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js"></script>
     <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
     <script defer src="/dist/nft-card.js"></script>
 
     <title>OpenSea Embeddable NFT example</title>
     <style media="screen">
-    h1 {
+    body {
       font-family: Avenir,Helvetica,Arial,sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       text-align: center;
       color: #2c3e50;
+    }
+    .header {
+        padding-top: 5vh;
     }
     .card-container {
       width: 670px;
@@ -26,9 +30,39 @@
     </style>
 </head>
 <body>
-<h1>OpenSea's Embeddable Nft!</h1>
+<h1 class="title header">OpenSea's Embeddable Nft!</h1>
+<div class="columns is-centered">
+    <div class="column is-8 ">
+        <div class="columns is-centered">
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <input id="tokenId" class="input" type="number" placeholder="Token Id">
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field">
+                    <div class="control">
+                        <input id="contractAddress" class="input" type="text" placeholder="Contract Address">
+                    </div>
+                </div>
+            </div>
+            <div class="column is-2">
+                <button id="viewAsset" class="button">View</button>
+            </div>
+<!--            <div class="column is-2">-->
+<!--                <label class="checkbox">-->
+<!--                    <input type="checkbox">-->
+<!--                    Horizontal-->
+<!--                </label>-->
+<!--            </div>-->
+        </div>
+    </div>
+</div>
 <div class="card-container">
     <nft-card
+            id="nftCard"
             contractAddress="0x7dca125b1e805dc88814aed7ccc810f677d3e1db"
             network="rinkeby"
             tokenId="18"
@@ -37,16 +71,21 @@
 
     <div style="padding-top: 5vh;"></div>
 
-    <nft-card
-            contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
-            height="250px"
-            horizontal
-            network="mainnet"
-            tokenId="2242579050293992223"
-            width="100%"
-    >
+<!--    <nft-card-->
+<!--            contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"-->
+<!--            height="250px"-->
+<!--            horizontal-->
+<!--            network="mainnet"-->
+<!--            tokenId="2242579050293992223"-->
+<!--            width="100%"-->
+<!--    >-->
     </nft-card>
     <div style="padding-top: 5vh;"></div>
 </div>
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+<script src="index.js"></script>
 </body>
 </html>

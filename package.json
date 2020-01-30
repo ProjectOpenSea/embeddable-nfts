@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:demo": "webpack-dev-server --config ./webpack.dev.config.js",
+    "build": "tsc -p tsconfig.json",
     "lint": "tslint --project . 'src/**/*.ts'",
     "lint:fix": "tslint --project . 'src/**/*.ts' --fix"
   },
