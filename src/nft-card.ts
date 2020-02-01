@@ -1,9 +1,9 @@
-import {css, customElement, html, LitElement, property} from 'lit-element'
-import {styleMap} from 'lit-html/directives/style-map'
+import { css, customElement, html, LitElement, property } from 'lit-element'
+import { styleMap } from 'lit-html/directives/style-map'
 
 import Web3 from 'web3'
-import {Network, OpenSeaPort} from 'opensea-js'
-import {OrderSide} from 'opensea-js/lib/types'
+import { Network, OpenSeaPort } from 'opensea-js'
+import { OrderSide } from 'opensea-js/lib/types'
 /* lit-element clases */
 import './pill.ts'
 import './nft-card-front.ts'

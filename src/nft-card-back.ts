@@ -1,6 +1,6 @@
-import {LitElement, html, customElement, property, css} from 'lit-element'
-import {styleMap} from 'lit-html/directives/style-map'
-import {classMap} from 'lit-html/directives/class-map'
+import { LitElement, html, customElement, property, css } from 'lit-element'
+import { styleMap } from 'lit-html/directives/style-map'
+import { classMap } from 'lit-html/directives/class-map'
 
 enum TraitType {
   Property = 'prop',
@@ -243,7 +243,9 @@ export class NftCardBackTemplate extends LitElement {
   }
 
   public getStatsTemplate(stats) {
-  if (stats.length <= 0) { return } // Don't render if empty array
+  if (stats.length <= 0) {
+    return undefined // Don't render if empty array
+  }
   return html`
       <div class="trait-header">
         <div class="trait-icon">
@@ -277,7 +279,7 @@ export class NftCardBackTemplate extends LitElement {
 
   public getRankingsTemplate(rankings) {
     const traitHeightTotal = (TRAIT_HEADER_HEIGHT + TRAIT_HEADER_MARGIN_BOTTOM)
-    console.log({traitHeightTotal})
+
     const numRanksRender = Math.floor((this.cardHeight - traitHeightTotal) / (RANK_HEIGHT + RANK_MARGIN)) - 1
     const numRanksRemaining = rankings.length - numRanksRender
     return html`
