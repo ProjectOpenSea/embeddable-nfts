@@ -15,10 +15,10 @@ export class pillTemplate extends LitElement {
   /**
    * Create an observed property. Triggers update on change.
    */
-  @property({type: String}) public imageUrl
-  @property({type: String}) public label
-  @property({type: String}) public backgroundColor
-  @property({type: String}) public textColor
+  @property({type: String}) public imageUrl = ''
+  @property({type: String}) public label = ''
+  @property({type: String}) public backgroundColor = ''
+  @property({type: String}) public textColor = ''
   @property({type: String}) public border = 'none'
   @property({type: Object}) public customStyles = {
     backgroundColor: this.backgroundColor,

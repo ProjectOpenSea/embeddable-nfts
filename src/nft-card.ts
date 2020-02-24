@@ -3,18 +3,19 @@ import { styleMap } from 'lit-html/directives/style-map'
 
 import Web3 from 'web3'
 import { Network, OpenSeaPort } from 'opensea-js'
-import { OrderSide } from 'opensea-js/lib/types'
+import {OpenSeaAsset, OrderSide} from 'opensea-js/lib/types'
+
 /* lit-element clases */
 import './pill.ts'
 import './nft-card-front.ts'
 import './nft-card-back.ts'
 
 export interface CustomWindow extends Window {
-    ethereum: any;
-    web3: any;
+    ethereum: any
+    web3: any
 }
 
-declare let window: CustomWindow;
+declare let window: CustomWindow
 
 /**
  * Nft-card element that manages front & back of card.
@@ -24,22 +25,6 @@ declare let window: CustomWindow;
  */
 @customElement('nft-card')
 export class NftCard extends LitElement {
-
-    /* User configurable properties */
-    @property({type: Boolean}) public horizontal = false
-    @property({type: String}) public contractAddress
-    @property({type: String}) public tokenId
-    @property({type: String}) public width = this.horizontal ? '670px' : '388px'
-    @property({type: String}) public height = this.horizontal ? '250px' : '560px'
-    @property({type: String}) public network: Network = Network.Main
-    @property({type: Object}) private asset
-    @property({type: Object}) private traitData = {}
-    @property({type: String}) private account
-    @property({type: String}) private flippedCard = false
-    @property({type: Boolean}) private loading = true
-    @property({type: Object}) private provider = ('web3' in window) ? window.web3.currentProvider : new Web3.providers.HttpProvider('https://mainnet.infura.io')
-    @property({type: Object}) private web3 = new Web3(this.provider)
-    @property({type: Object}) private seaport
 
     static get styles() {
         return css`
@@ -73,6 +58,39 @@ export class NftCard extends LitElement {
     `
     }
 
+    /* User configurable properties */
+    @property({type: Boolean}) public horizontal = false
+    @property({type: String}) public contractAddress = ''
+    @property({type: String}) public tokenId = ''
+    @property({type: String}) public width = this.horizontal ? '670px' : '388px'
+    @property({type: String}) public height = this.horizontal ? '250px' : '560px'
+    @property({type: String}) public network: Network = Network.Main
+
+    @property({type: Object}) private asset!: OpenSeaAsset
+    @property({type: Object}) private traitData = {}
+    @property({type: String}) private account: string = ''
+    @property({type: String}) private flippedCard = false
+    @property({type: Object}) private provider: any // = ('web3' in window) ? window.web3.currentProvider : new Web3.providers.HttpProvider('https://mainnet.infura.io')
+    // @property({type: Object}) private web3: any = new Web3(this.provider)
+    @property({type: Object}) private seaport!: OpenSeaPort
+
+    // Card state variables
+    @property({type: Boolean}) private loading = true
+    @property({type: Boolean}) private isOwnedByAccount = false
+    @property({type: Boolean}) private isUnlocked: boolean = false
+    @property({type: Boolean}) private hasWeb3: boolean = false
+    @property({type: Boolean}) private isMatchingNetwork: boolean = false
+
+    private static getProvider() {
+        if (window.ethereum) {
+            return window.ethereum
+        } else if (window.web3) {
+            return window.web3.currentProvider
+        } else {
+            return new Web3.providers.HttpProvider('https://mainnet.infura.io')
+        }
+    }
+
     /**
      * ConnectedCallback - Invoked when a component is added to the document’s DOM.
      * Grabs data from the OpenSea SDK and populates data objects to be passed to
@@ -80,17 +98,16 @@ export class NftCard extends LitElement {
      */
     public async connectedCallback() {
         super.connectedCallback()
+        this.hasWeb3 = !!window.web3
 
+        // Get the web3 provider
+        this.provider = NftCard.getProvider()
+        console.log(this.provider)
         this.seaport = new OpenSeaPort(this.provider, {networkName: this.getNetwork()})
-        await this.connectWallet()
 
-        ;[this.account] = await this.web3.eth.getAccounts()
+        // this.account = await this.web3.eth.getAccounts().then(accounts => accounts.length > 0 ? accounts[0] : '')
 
         await this.getAsset(this.contractAddress, this.tokenId)
-
-        if (this.account) {
-            this.asset.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
-        }
 
         this.traitData = {
             traits: this.asset.traits,
@@ -104,30 +121,37 @@ export class NftCard extends LitElement {
         await this.requestUpdate()
 
         // Watch for the account to change then update state of component
-        window.ethereum.on('accountsChanged', function (accounts) {
-            [this.account] = accounts
-            console.log('accountsChanged', accounts)
-        })
+        // window.ethereum.on('accountsChanged',  (accounts: Array<string>) => {
+        //     this.account = accounts.length > 0 ? accounts[0] : ''
+        //     console.log('accountsChanged', accounts)
+        // })
     }
-
     public async buyEvent() {
+        // Check to see that we are connected and we have an account
+        // This will run if user is logged out or has not granted access
+        if (this.provider) {
+            await this.connectWallet()
+            this.account = this.provider ? this.provider.selectedAddress : null
+        }
+        if (this.isUnlocked) {
+            const order = await this.seaport.api.getOrder({
+                side: OrderSide.Sell,
+                asset_contract_address: this.asset.assetContract.address,
+                token_id: this.tokenId
+            })
 
-        const order = await this.seaport.api.getOrder({
-            side: OrderSide.Sell,
-            asset_contract_address: this.asset.contractAddress,
-            token_id: this.asset.tokenId
-        })
-
-        // The buyer's wallet address, also the taker
-        const accountAddress = this.account
-        await this.seaport.fulfillOrder({order, accountAddress})
+            // The buyer's wallet address, also the taker
+            const accountAddress = this.account
+            await this.seaport.fulfillOrder({order, accountAddress})
+        }
     }
 
     public flipCard() {
         this.flippedCard = !this.flippedCard
     }
 
-    public eventHandler(event) {
+    // TODO: Create and EventType
+    public eventHandler(event: { detail: any }) {
         const {detail} = event
         switch (detail.type) {
             case 'view':
@@ -145,15 +169,6 @@ export class NftCard extends LitElement {
 
     public goToOpenSea() {
         window.open(this.asset.openseaLink, '_blank')
-    }
-
-    public updated(changedProperties) {
-        changedProperties.forEach((oldValue, propName) => {
-            if (propName === 'contractAddress') {
-//             await this.requestUpdate()
-            }
-            //console.log('PROP UPDATED - ', oldValue, propName)
-        })
     }
 
     /**
@@ -182,6 +197,13 @@ export class NftCard extends LitElement {
               .horizontal=${this.horizontal}
               @new-event="${this.eventHandler}"
               .asset=${this.asset}
+              .state=${({
+                isOwnedByAccount: this.isOwnedByAccount,
+                isMatchingNetwork: this.isMatchingNetwork,
+                isUnlocked: this.isUnlocked,
+                hasWeb3: this.hasWeb3,
+                network: this.network
+               })}
               .account=${this.account}
             ></nft-card-front>
             <nft-card-back
@@ -194,8 +216,8 @@ export class NftCard extends LitElement {
      `
     }
 
-    private async getAsset(contractAddress, tokenId) {
-        this.asset = await this.seaport.api.getAsset(contractAddress, tokenId);
+    private async getAsset(contractAddress: string, tokenId: string ) {
+        this.asset = await this.seaport.api.getAsset(contractAddress, tokenId)
     }
 
     private getNetwork() {
@@ -204,22 +226,51 @@ export class NftCard extends LitElement {
                 return Network.Main
             case 'rinkeby':
                 return Network.Rinkeby
+            default: return Network.Main
         }
     }
 
     /**
      * async connectWallet - Initializes connection to the injected web3 account
+     * Pre-Conditions: this.provider has been defined - this method should only
+     * be called if web3 is available. If web3 is available then this.provider
+     * must be defined
      */
     private async connectWallet() {
-        if (!window.web3) {
-            //
-        } else if (window.ethereum) {
-            window.ethereum.enable()
+        if (window.web3) {
+            this.isUnlocked = true
+
+            // If it is modern dapp then show prompt requesting access
+            if (window.ethereum) {
+                const ACCESS_DENIED = 4001
+                await window.ethereum.enable().catch((error: {code: number}) => {
+                    if (error.code === ACCESS_DENIED) {
+                        this.isUnlocked = false
+                    }
+                })
+            }
+            this.isMatchingNetwork = this.networkFromId(this.provider.networkVersion) === this.network
+            if (this.provider.selectedAddress) {
+                this.account = this.provider.selectedAddress
+                this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
+            }
         } else {
             const errorMessage =
-                'You need an Ethereum wallet to interact with this marketplace. Unlock your wallet, get MetaMask.io or Portis on desktop, or get Trust Wallet or Coinbase Wallet on mobile.'
+                'You need an Ethereum wallet to interact with this marketplace. ' +
+                'Unlock your wallet, get MetaMask.io or Portis on desktop, or' +
+                ' get Trust Wallet or Coinbase Wallet on mobile.'
             alert(errorMessage)
             throw new Error(errorMessage)
+        }
+    }
+
+    // Given the network version this method returns the network name
+    // Since only Main & Rinkeby are supported we ignore the other networks
+    private networkFromId(id: string) {
+        switch (id) {
+            case '1': return Network.Main
+            case '4': return Network.Rinkeby
+            default: return null
         }
     }
 }

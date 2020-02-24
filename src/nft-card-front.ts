@@ -2,23 +2,44 @@
  * Import LitElement base class, html helper function,
  * and TypeScript decorators
  */
-import {LitElement, html, customElement, property, css} from 'lit-element'
+import {
+  LitElement,
+  html,
+  customElement,
+  property,
+  css,
+  TemplateResult
+} from 'lit-element'
 
 import {classMap} from 'lit-html/directives/class-map'
 import {styleMap} from 'lit-html/directives/style-map'
 
-const BTN_TEXT = {
+import {OpenSeaAsset, OpenSeaFungibleToken, Order, Network} from 'opensea-js/lib/types'
+
+const BTN_TEXT: {[index: string]: string} = {
   'manage': 'manage this item ❯',
   'buy': 'buy this item ❯',
-  'view': 'view on opensea 🚢 ❯'
+  'view': 'view on openSea ❯',
+  'switchNetworkrinkeby': 'switch to rinkeby',
+  'switchNetworkmain': 'switch to mainnet',
+}
+
+interface LastSaleData {
+  paymentToken?: OpenSeaFungibleToken
+  currentPrice: number
+  expires: Date
+}
+
+interface State {
+  isOwnedByAccount: boolean
+  isMatchingNetwork: boolean
+  isUnlocked: boolean
+  hasWeb3: boolean
+  network: Network
 }
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
-  @property({type: Object}) public asset = {}
-  @property({type: String}) public account
-  @property({type: Object}) public loading = true
-  @property({type: Boolean}) public horizontal
 
   static get styles() {
     return css`
@@ -133,49 +154,50 @@ export class NftCardFrontTemplate extends LitElement {
       }
     `
   }
+  @property({type: Object}) public asset!: OpenSeaAsset
+  @property({type: Boolean}) public isOwnedByAccount!: boolean
+  @property({type: String}) public account!: string
+  @property({type: Boolean}) public horizontal!: boolean
+  @property({type: Object}) public state!: State
 
-  /**
+  @property({type: Boolean}) private isForSale: boolean = false
+  @property({type: Boolean}) private isLoading: boolean = true
+  @property({type: Object}) private lastSaleData?: LastSaleData
+
+  /*
    * EventHandler - Dispatch event allowing parent to handle click event
-   *
-   * @param e the event context
-   * @param type the event context
-   * @param data the event context
+   * TODO: Add EventType
    */
-  public eventHandler(e, type, data = {}) {
-    const event = new CustomEvent('new-event', {
+  public eventHandler(_event: any, type: string, data = {}) {
+    const newEvent = new CustomEvent('new-event', {
       detail: {
         type,
         data
       }
     })
-    this.dispatchEvent(event)
+    this.dispatchEvent(newEvent)
   }
 
-  public connectedCallback() {
-    super.connectedCallback()
-    // setTimeout(() => this.eventHandler('','flip'), 10);
-    // console.warn('I flip card for testing remove me later')
-  }
-
-  public updated(changedProperties: array) {
+  public updated(changedProperties: Map<string, string>) {
     // Assumption: If the traitData gets updated we should rebuild the
     // traits object that populates UI
     // Assumption: This will ONLY get called once per refresh
-    changedProperties.forEach((oldValue, propName) => {
+    changedProperties.forEach((_oldValue: string, propName: string) => {
       if (propName === 'asset') {
         // We got the data so we are done loading
-        this.loading = false
+        this.isLoading = false
 
         // Check for a sell order to populate the UI with the sell information
-        if (this.asset.sellOrders.length > 0) {
-          this.canBuy = true
-          const order = this.asset.sellOrders[0]
-          const token = order.paymentTokenContract
-          const currentPrice = order.currentPrice.toFixed() / Math.pow(10, token.decimals)
-          const expires = order.expirationTime.toFixed()
+        // TODO: We will be using lastSale here once added to SDK
+        if (this.asset.sellOrders!.length > 0) {
+          this.isForSale = true
+          const order: Order = this.asset.sellOrders![0]
+          const paymentToken = order.paymentTokenContract
+          const currentPrice = +order.currentPrice!.toFixed() / Math.pow(10, paymentToken!.decimals)
+          const expires = new Date(order.expirationTime.toFixed())
 
-          this.sellOrder = {
-            token,
+          this.lastSaleData = {
+            paymentToken,
             currentPrice,
             expires
           }
@@ -184,14 +206,13 @@ export class NftCardFrontTemplate extends LitElement {
         // Tell the component to update with new state
         this.requestUpdate()
       }
-      console.log(oldValue, propName)
     })
   }
 
-  public getAssetImageTemplate(imageUrl) {
+  public getAssetImageTemplate(imageUrl: string) {
     return (html`
       <div class="asset-image-container">
-        <img src="${imageUrl}" />
+        <img src="${imageUrl}"  alt=""/>
       </div>
     `)
   }
@@ -199,16 +220,18 @@ export class NftCardFrontTemplate extends LitElement {
   public getAssetPriceTemplate() {
     // TODO: Needs to account for tokens with images not symbols
     // If payment_token.image_url then use token image instead of symbol
-    let prevPriceTemplate = ''
-    let currentPriceTemplate = ''
+    let prevPriceTemplate: TemplateResult = html``
+    let currentPriceTemplate: TemplateResult = html``
 
-    if (this.sellOrder) {
-      const currentPriceSymbol = this.sellOrder.token.symbol === 'ETH' ? 'Ξ ' : ''
-      currentPriceTemplate = html`<div class="asset-detail-price-current">${currentPriceSymbol} ${this.sellOrder.currentPrice}</div>`
+    if (this.lastSaleData) {
+      const currentPriceSymbol = this.lastSaleData.paymentToken!.symbol === 'ETH' ? 'Ξ ' : ''
+      currentPriceTemplate = html`<div class="asset-detail-price-current">${currentPriceSymbol} ${this.lastSaleData.currentPrice}</div>`
     }
 
     if (this.asset.lastSale) {
+      // @ts-ignore ignore until LastSale type gets added to SDK
       const formattedPrevPrice = this.asset.lastSale.total_price / Math.pow(10, this.asset.lastSale.payment_token.decimals)
+      // @ts-ignore ignore until LastSale type gets added to SDK
       const prevPriceSymbol = this.asset.lastSale.payment_token.symbol === 'ETH' ? 'Ξ ' : ''
       prevPriceTemplate = html`<div class="asset-detail-price-previous">Prev. ${prevPriceSymbol} ${formattedPrevPrice}</div>`
     }
@@ -221,36 +244,17 @@ export class NftCardFrontTemplate extends LitElement {
     `)
   }
 
-  public getButtonTemplate() {
-    let btnType
-    if (this.asset.isOwnedByAccount) {
-      btnType = 'manage'
-    } else if (this.canBuy) {
-      btnType = 'buy'
-    } else if (!this.canBuy) {
-      btnType = 'view'
-    }
-
-    return html`
-      <button
-        @click="${e => this.eventHandler(e, btnType)}"
-      >
-        ${BTN_TEXT[btnType]}
-      </button>
-    `
-  }
-
   /**
    * Implement `render` to define a template for your element.
    */
   public render() {
-    if (this.isLoading) { return html`` }
+    if (this.isLoading) { return html`front loading` }
     return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
         <div class="asset-action-info">
           <svg
             id="info-btn"
-            @click="${e => this.eventHandler(e, 'flip')}"
+            @click="${(e: any) => this.eventHandler(e, 'flip')}"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
@@ -301,6 +305,43 @@ export class NftCardFrontTemplate extends LitElement {
           </div>
         </div>
       </div>
+    `
+  }
+
+  private getButtonTemplate() {
+
+    let btnType: string = ''
+    console.log({ ...this.state, isForSale: this.isForSale})
+
+    if (this.state.hasWeb3 /* && this.isForSale */) {
+      if (this.state.isUnlocked) {
+        if (this.state.isMatchingNetwork) {
+          if (this.state.isOwnedByAccount) {
+            // The account owns asset
+            btnType = 'manage'
+          } else {
+            // Asset is for sale and not owned by currently selected account
+            btnType = 'buy'
+          }
+        } else {
+          // Network does not match or connected to unsupported network
+          btnType = "switchNetwork" + this.state.network // TODO:
+        }
+      } else {
+        // Wallet is locked or access not granted
+        btnType = 'buy'  // TODO: Change this to emit an event that calls an "connecteWallet()"
+      }
+    } else {
+      // No injected web3 found
+      btnType = 'view'
+    }
+
+    return html`
+      <button
+        @click="${(e: any) => this.eventHandler(e, btnType)}"
+      >
+        ${BTN_TEXT[btnType]}
+      </button>
     `
   }
 }

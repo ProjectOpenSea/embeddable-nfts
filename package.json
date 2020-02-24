@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:demo": "webpack-dev-server --config ./webpack.dev.config.js",
-    "build": "tsc -p tsconfig.json",
+    "build": "webpack --config ./webpack.config.js",
     "lint": "tslint --project . 'src/**/*.ts'",
     "lint:fix": "tslint --project . 'src/**/*.ts' --fix"
   },
@@ -21,7 +21,7 @@
   "homepage": "https://github.com/ProjectOpenSea/embeddable_nfts#readme",
   "dependencies": {
     "lit-element": "^2.2.1",
-    "lit-html": "^2.2.1",
+    "lit-html": "^1.1.2",
     "opensea-js": "^0.7.1",
     "web3": "^1.2.5-rc.0"
   },
