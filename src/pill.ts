@@ -11,7 +11,7 @@ import {styleMap} from 'lit-html/directives/style-map'
  * a custom element. Registers <my-element> as an HTML tag.
  */
 @customElement('pill-element')
-export class pillTemplate extends LitElement {
+export class PillTemplate extends LitElement {
   /**
    * Create an observed property. Triggers update on change.
    */
@@ -85,7 +85,7 @@ export class pillTemplate extends LitElement {
     border: this.border
   })}"
       >
-        ${this.imageUrl ? html`<img src="${this.imageUrl}"></img>` : ''}
+        ${this.imageUrl ? html`<img src="${this.imageUrl}" alt=""/>` : ''}
         <p>${this.label}</p>
       </div>
     `

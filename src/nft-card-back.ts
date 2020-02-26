@@ -404,7 +404,7 @@ export class NftCardBackTemplate extends LitElement {
     this.traits.rankings.length > 0 ? this.getRankingsTemplate(this.traits.rankings)
       : this.getStatsTemplate(this.traits.stats)
           }
-          </div> 
+          </div>
           <div class="attribute-container attribute-boosts">
 
             ${this.loading

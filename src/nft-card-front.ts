@@ -16,12 +16,20 @@ import {styleMap} from 'lit-html/directives/style-map'
 
 import {OpenSeaAsset, OpenSeaFungibleToken, Order, Network} from 'opensea-js/lib/types'
 
+enum ButtonType {
+  Manage = 'manage',
+  Buy = 'buy',
+  View = 'view',
+  SwitchNetwork = 'switchNetwork',
+  Unlock = 'unlock'
+}
+
 const BTN_TEXT: {[index: string]: string} = {
-  'manage': 'manage this item ❯',
-  'buy': 'buy this item ❯',
-  'view': 'view on openSea ❯',
-  'switchNetworkrinkeby': 'switch to rinkeby',
-  'switchNetworkmain': 'switch to mainnet',
+  [ButtonType.Manage]: 'manage this item ❯',
+  [ButtonType.Buy]: 'buy this item ❯',
+  [ButtonType.View]: 'view on openSea ❯',
+  [ButtonType.SwitchNetwork]: 'switch to ',
+  [ButtonType.Unlock]: 'buy this item ❯'
 }
 
 interface LastSaleData {
@@ -160,23 +168,8 @@ export class NftCardFrontTemplate extends LitElement {
   @property({type: Boolean}) public horizontal!: boolean
   @property({type: Object}) public state!: State
 
-  @property({type: Boolean}) private isForSale: boolean = false
   @property({type: Boolean}) private isLoading: boolean = true
   @property({type: Object}) private lastSaleData?: LastSaleData
-
-  /*
-   * EventHandler - Dispatch event allowing parent to handle click event
-   * TODO: Add EventType
-   */
-  public eventHandler(_event: any, type: string, data = {}) {
-    const newEvent = new CustomEvent('new-event', {
-      detail: {
-        type,
-        data
-      }
-    })
-    this.dispatchEvent(newEvent)
-  }
 
   public updated(changedProperties: Map<string, string>) {
     // Assumption: If the traitData gets updated we should rebuild the
@@ -190,7 +183,6 @@ export class NftCardFrontTemplate extends LitElement {
         // Check for a sell order to populate the UI with the sell information
         // TODO: We will be using lastSale here once added to SDK
         if (this.asset.sellOrders!.length > 0) {
-          this.isForSale = true
           const order: Order = this.asset.sellOrders![0]
           const paymentToken = order.paymentTokenContract
           const currentPrice = +order.currentPrice!.toFixed() / Math.pow(10, paymentToken!.decimals)
@@ -308,39 +300,51 @@ export class NftCardFrontTemplate extends LitElement {
     `
   }
 
+  /*
+   * EventHandler - Dispatch event allowing parent to handle click event
+   * '_event' isn't used here but it's needed to call the handler
+   */
+  private eventHandler(_event: any, type: string) {
+    const buttonEvent = new CustomEvent('button-event', {
+      detail: {
+        type
+      }
+    })
+    this.dispatchEvent(buttonEvent)
+  }
+
   private getButtonTemplate() {
 
-    let btnType: string = ''
-    console.log({ ...this.state, isForSale: this.isForSale})
+    let btnType: ButtonType
 
-    if (this.state.hasWeb3 /* && this.isForSale */) {
+    if (this.state.hasWeb3) {
       if (this.state.isUnlocked) {
         if (this.state.isMatchingNetwork) {
           if (this.state.isOwnedByAccount) {
             // The account owns asset
-            btnType = 'manage'
+            btnType = ButtonType.Manage
           } else {
             // Asset is for sale and not owned by currently selected account
-            btnType = 'buy'
+            btnType = ButtonType.Buy
           }
         } else {
           // Network does not match or connected to unsupported network
-          btnType = "switchNetwork" + this.state.network // TODO:
+          btnType = ButtonType.SwitchNetwork // "switchNetwork" + this.state.network
         }
       } else {
         // Wallet is locked or access not granted
-        btnType = 'buy'  // TODO: Change this to emit an event that calls an "connecteWallet()"
+        btnType = ButtonType.Unlock
       }
     } else {
       // No injected web3 found
-      btnType = 'view'
+      btnType = ButtonType.View
     }
-
+    const btnText: string = btnType === ButtonType.SwitchNetwork ? BTN_TEXT[btnType] + this.state.network : BTN_TEXT[btnType]
     return html`
       <button
         @click="${(e: any) => this.eventHandler(e, btnType)}"
       >
-        ${BTN_TEXT[btnType]}
+        ${btnText}
       </button>
     `
   }
