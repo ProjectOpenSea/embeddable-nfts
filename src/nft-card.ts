@@ -5,10 +5,13 @@ import { styleMap } from 'lit-html/directives/style-map'
 import Web3 from 'web3'
 
 import { Network, OpenSeaPort } from 'opensea-js'
-import {OpenSeaAsset, OrderSide} from 'opensea-js/lib/types'
+import { OpenSeaAsset, OrderSide } from 'opensea-js/lib/types'
+
+import { NO_WEB3_ERROR } from './constants'
 
 /* lit-element classes */
 import './pill.ts'
+import './loader.ts'
 import './nft-card-front.ts'
 import './nft-card-back.ts'
 
@@ -17,7 +20,7 @@ export interface CustomWindow extends Window {
     web3: Web3
 }
 
-declare let window: CustomWindow
+declare const window: CustomWindow
 
 export interface ButtonEvent {
     detail: {
@@ -131,23 +134,15 @@ export class NftCard extends LitElement {
         //     console.log('accountsChanged', accounts)
         // })
     }
-    public async buyEvent() {
-        // Check to see that we are connected and we have an account
-        // This will run if user is logged out or has not granted access
-        if (this.provider) {
-            await this.connectWallet()
-            this.account = this.provider ? this.provider.selectedAddress : null
-        }
+
+    public async buyAsset() {
         if (this.isUnlocked) {
             const order = await this.seaport.api.getOrder({
                 side: OrderSide.Sell,
                 asset_contract_address: this.asset.assetContract.address,
                 token_id: this.tokenId
             })
-
-            // The buyer's wallet address, also the taker
-            const accountAddress = this.account
-            await this.seaport.fulfillOrder({order, accountAddress})
+            await this.seaport.fulfillOrder({order, accountAddress: this.account})
         }
     }
 
@@ -170,12 +165,12 @@ export class NftCard extends LitElement {
        >
        <div class="card-inner">
           ${this.loading ?
-            html`loader`
+            html`<loader-element></loader-element>`
             :
             html`
             <nft-card-front
               .horizontal=${this.horizontal}
-              @new-event="${this.eventHandler}"
+              @button-event="${this.eventHandler}"
               .asset=${this.asset}
               .state=${({
                 isOwnedByAccount: this.isOwnedByAccount,
@@ -207,8 +202,11 @@ export class NftCard extends LitElement {
             case 'manage':
                 this.goToOpenSea()
                 break
+            case 'unlock':
+                this.connectWallet()
+                break
             case 'buy':
-                this.buyEvent()
+                this.buyAsset()
                 break
             case 'flip':
                 this.flipCard()
@@ -255,12 +253,8 @@ export class NftCard extends LitElement {
                 this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
             }
         } else {
-            const errorMessage =
-                'You need an Ethereum wallet to interact with this marketplace. ' +
-                'Unlock your wallet, get MetaMask.io or Portis on desktop, or' +
-                ' get Trust Wallet or Coinbase Wallet on mobile.'
-            alert(errorMessage)
-            throw new Error(errorMessage)
+            alert(NO_WEB3_ERROR)
+            throw new Error(NO_WEB3_ERROR)
         }
     }
 

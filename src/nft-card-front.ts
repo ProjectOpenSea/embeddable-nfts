@@ -148,8 +148,8 @@ export class NftCardFrontTemplate extends LitElement {
       }
       .asset-action-info {
         position: absolute;
-        right: 10px;
-        top: 10px;
+        right: 5px;
+        top: 5px;
       }
       .asset-action-info #info-icon {
         cursor: pointer;
@@ -168,7 +168,7 @@ export class NftCardFrontTemplate extends LitElement {
   @property({type: Boolean}) public horizontal!: boolean
   @property({type: Object}) public state!: State
 
-  @property({type: Boolean}) private isLoading: boolean = true
+  // @property({type: Boolean}) private isLoading: boolean = true
   @property({type: Object}) private lastSaleData?: LastSaleData
 
   public updated(changedProperties: Map<string, string>) {
@@ -178,7 +178,7 @@ export class NftCardFrontTemplate extends LitElement {
     changedProperties.forEach((_oldValue: string, propName: string) => {
       if (propName === 'asset') {
         // We got the data so we are done loading
-        this.isLoading = false
+        // this.isLoading = false
 
         // Check for a sell order to populate the UI with the sell information
         // TODO: We will be using lastSale here once added to SDK
@@ -240,7 +240,6 @@ export class NftCardFrontTemplate extends LitElement {
    * Implement `render` to define a template for your element.
    */
   public render() {
-    if (this.isLoading) { return html`front loading` }
     return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
         <div class="asset-action-info">
@@ -278,7 +277,7 @@ export class NftCardFrontTemplate extends LitElement {
                 border="1px solid #E2E6EF"
               ></pill-element>
             </div>
-            <!-- TODO: This badge is optional and must be rendered programmatically -->
+            <!-- This badge is optional and must be rendered programmatically -->
             <!-- <div class="asset-detail-badge">
               <pill-element
                 label="New"
@@ -339,9 +338,14 @@ export class NftCardFrontTemplate extends LitElement {
       // No injected web3 found
       btnType = ButtonType.View
     }
+    // If we are informing the user to switch networks we need to append the
+    // network on which the asset resides
     const btnText: string = btnType === ButtonType.SwitchNetwork ? BTN_TEXT[btnType] + this.state.network : BTN_TEXT[btnType]
+    const btnStyle = btnType === ButtonType.SwitchNetwork ? styleMap({'background': 'rgb(183, 183, 183)', 'cursor': 'not-allowed'}) : ''
+
     return html`
       <button
+        style=${btnStyle}
         @click="${(e: any) => this.eventHandler(e, btnType)}"
       >
         ${btnText}
