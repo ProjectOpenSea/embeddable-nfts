@@ -11,10 +11,10 @@ import {
   TemplateResult
 } from 'lit-element'
 
-import {classMap} from 'lit-html/directives/class-map'
-import {styleMap} from 'lit-html/directives/style-map'
+import { classMap } from 'lit-html/directives/class-map'
+import { styleMap } from 'lit-html/directives/style-map'
 
-import {OpenSeaAsset, OpenSeaFungibleToken, Order, Network} from 'opensea-js/lib/types'
+import { OpenSeaAsset, OpenSeaFungibleToken, Order, Network } from 'opensea-js/lib/types'
 
 enum ButtonType {
   Manage = 'manage',
@@ -24,7 +24,7 @@ enum ButtonType {
   Unlock = 'unlock'
 }
 
-const BTN_TEXT: {[index: string]: string} = {
+const BTN_TEXT: { [index: string]: string } = {
   [ButtonType.Manage]: 'manage this item ❯',
   [ButtonType.Buy]: 'buy this item ❯',
   [ButtonType.View]: 'view on openSea ❯',
@@ -162,7 +162,7 @@ export class NftCardFrontTemplate extends LitElement {
       }
     `
   }
-  @property({type: Object}) public asset!: OpenSeaAsset
+  @property({type: Object}) public asset?: OpenSeaAsset
   @property({type: Boolean}) public isOwnedByAccount!: boolean
   @property({type: String}) public account!: string
   @property({type: Boolean}) public horizontal!: boolean
@@ -182,10 +182,11 @@ export class NftCardFrontTemplate extends LitElement {
 
         // Check for a sell order to populate the UI with the sell information
         // TODO: We will be using lastSale here once added to SDK
-        if (this.asset.sellOrders!.length > 0) {
-          const order: Order = this.asset.sellOrders![0]
+        if (this.asset && this.asset.sellOrders && this.asset.sellOrders.length > 0) {
+          const order: Order = this.asset.sellOrders[0]
           const paymentToken = order.paymentTokenContract
-          const currentPrice = +order.currentPrice!.toFixed() / Math.pow(10, paymentToken!.decimals)
+          const decimals = paymentToken ? paymentToken.decimals : 18 // Default decimals to 18
+          const currentPrice = order.currentPrice ? +order.currentPrice.toFixed() / Math.pow(10, decimals) : 0
           const expires = new Date(order.expirationTime.toFixed())
 
           this.lastSaleData = {
@@ -215,12 +216,12 @@ export class NftCardFrontTemplate extends LitElement {
     let prevPriceTemplate: TemplateResult = html``
     let currentPriceTemplate: TemplateResult = html``
 
-    if (this.lastSaleData) {
-      const currentPriceSymbol = this.lastSaleData.paymentToken!.symbol === 'ETH' ? 'Ξ ' : ''
+    if (this.lastSaleData && this.lastSaleData.paymentToken) {
+      const currentPriceSymbol = this.lastSaleData.paymentToken.symbol === 'ETH' ? 'Ξ ' : ''
       currentPriceTemplate = html`<div class="asset-detail-price-current">${currentPriceSymbol} ${this.lastSaleData.currentPrice}</div>`
     }
 
-    if (this.asset.lastSale) {
+    if (this.asset && this.asset.lastSale) {
       // @ts-ignore ignore until LastSale type gets added to SDK
       const formattedPrevPrice = this.asset.lastSale.total_price / Math.pow(10, this.asset.lastSale.payment_token.decimals)
       // @ts-ignore ignore until LastSale type gets added to SDK
@@ -240,6 +241,7 @@ export class NftCardFrontTemplate extends LitElement {
    * Implement `render` to define a template for your element.
    */
   public render() {
+    if (!this.asset) { return undefined } // If there is no asset then we can't render
     return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
         <div class="asset-action-info">

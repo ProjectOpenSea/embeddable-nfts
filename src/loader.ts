@@ -1,5 +1,4 @@
-import {css, customElement, html, LitElement} from 'lit-element'
-
+import { css, customElement, html, LitElement } from 'lit-element'
 
 @customElement('loader-element')
 export class Loader extends LitElement {

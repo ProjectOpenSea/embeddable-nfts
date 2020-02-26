@@ -1,7 +1,7 @@
 import { LitElement, html, customElement, property, css } from 'lit-element'
 import { styleMap } from 'lit-html/directives/style-map'
 import { classMap } from 'lit-html/directives/class-map'
-import {OpenSeaTraitStats} from 'opensea-js/lib/types'
+import { OpenSeaTraitStats } from 'opensea-js/lib/types'
 
 enum TraitType {
   Property = 'prop',
@@ -19,7 +19,6 @@ interface Traits {
 }
 
 interface Trait {
-  name: string
   value: string | number
   max?: string | number
   display_type: string
@@ -235,9 +234,12 @@ export class NftCardBackTemplate extends LitElement {
         await this.requestUpdate()
       }
     })
-    const el: HTMLElement = this.shadowRoot!.firstElementChild as HTMLElement
-    this.cardHeight = el.offsetHeight
-    this.cardWidth = el.offsetWidth
+
+    if (this.shadowRoot) {
+      const el: HTMLElement = this.shadowRoot.firstElementChild as HTMLElement
+      this.cardHeight = el.offsetHeight
+      this.cardWidth = el.offsetWidth
+    }
   }
 
   public getBoostsTemplate(boosts: any[]) {
@@ -302,7 +304,7 @@ export class NftCardBackTemplate extends LitElement {
             <div class="stat">
               <div class="stat-value">${stat.value}</div>
               <div class="stat-name">
-                ${NftCardBackTemplate.formatTrait(stat.name)}
+                ${NftCardBackTemplate.formatTrait(stat.trait_type)}
               </div>
             </div>
           `
@@ -333,18 +335,18 @@ export class NftCardBackTemplate extends LitElement {
         <p class="attribute-title">Rankings</p>
       </div>
       ${rankings.slice(0, numRanksRender).map(
-        ({name, value, max}) => html`
+        ({trait_type, value, max}) => html`
           <div class="trait_ranking" style="${styleMap(rankStyle)}">
             <div class="trait_ranking-header">
               <div class="trait_ranking-header-name">
-                ${NftCardBackTemplate.formatTrait(name)}
+                ${NftCardBackTemplate.formatTrait(trait_type)}
               </div>
               <div class="trait_ranking-header-value">${value} of ${max}</div>
             </div>
             <div class="trait_ranking-bar">
               <div
                 class="trait_ranking-bar-fill"
-                style=${styleMap({width: `${(+value / +max!) * 100}%`})}
+                style=${styleMap({width: `${(+value / +(max || 1 /* If no max then just render full bar */)) * 100}%`})}
               ></div>
             </div>
           </div>
@@ -362,7 +364,7 @@ export class NftCardBackTemplate extends LitElement {
     for (let i = 0; i < props.length && i < DISPLAY_MAX; i++) {
       propsTemplate.push(html`
         <div class="trait_property">
-          <p class="trait_property-type">${NftCardBackTemplate.formatTrait(props[i].name)}</p>
+          <p class="trait_property-type">${NftCardBackTemplate.formatTrait(props[i].trait_type)}</p>
           <p class="trait_property-value">${props[i].value}</p>
         </div>
       `)
@@ -431,10 +433,9 @@ export class NftCardBackTemplate extends LitElement {
       const name = trait.trait_type
 
       this.traits[type + 's'].push({
-        name,
         value: trait.value,
         ...(type === TraitType.Ranking ? { max: collectionTraits[name].max as unknown as number } : {}),
-        trait_type: '',
+        trait_type: trait.trait_type,
         display_type: ''
       })
     }

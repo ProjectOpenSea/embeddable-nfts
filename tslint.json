@@ -80,6 +80,7 @@
             true,
             "check-branch",
             "check-decl",
+            "check-module",
             "check-operator",
             "check-separator",
             "check-rest-spread",

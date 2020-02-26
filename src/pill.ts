@@ -1,7 +1,3 @@
-/**
- * Import LitElement base class, html helper function,
- * and TypeScript decorators
- **/
 import { LitElement, html, customElement, property, css } from 'lit-element'
 
 import { styleMap } from 'lit-html/directives/style-map'
@@ -26,9 +22,6 @@ export class PillTemplate extends LitElement {
     border: this.border
   }
 
-  // @TODO: Add dynamic styles using styleMap directive
-  // @TODO: Add dynamic style text color
-  // @TODO: Add dynamic style border & border color
   static get styles() {
     return css`
       .pill {

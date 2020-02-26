@@ -66,6 +66,18 @@ export class NftCard extends LitElement {
       .flipped-card .card-inner {
         transform: rotateY(180deg);
       }
+      .card .error {
+        height: 100%;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+      }
+      .card .error-moji {
+        font-size: 50px;
+      }
+      .card .error-message {
+        font-size: 16px;
+      }
     `
     }
 
@@ -86,6 +98,7 @@ export class NftCard extends LitElement {
 
     // Card state variables
     @property({type: Boolean}) private loading = true
+    @property({type: Boolean}) private error = false
     @property({type: Boolean}) private isOwnedByAccount = false
     @property({type: Boolean}) private isUnlocked: boolean = false
     @property({type: Boolean}) private hasWeb3: boolean = false
@@ -113,16 +126,21 @@ export class NftCard extends LitElement {
         // Get the web3 provider
         this.provider = NftCard.getProvider()
 
-        this.seaport = new OpenSeaPort(this.provider, {networkName: this.getNetwork()})
+        this.seaport = new OpenSeaPort(this.provider, {networkName: this.network})
 
-        this.asset = await this.seaport.api.getAsset(this.contractAddress, this.tokenId)
+        try {
+            this.asset = await this.seaport.api.getAsset(this.contractAddress, this.tokenId)
+            this.traitData = {
+                traits: this.asset.traits,
+                collectionTraits: this.asset.collection.traitStats
+            }
 
-        this.traitData = {
-            traits: this.asset.traits,
-            collectionTraits: this.asset.collection.traitStats
+        } catch (e) {
+            this.error = true
+            // Probably could not find the asset
+            console.error(e)
         }
 
-        // We got the data so we are done loading
         this.loading = false
 
         // Tell the component to update with new state
@@ -146,6 +164,40 @@ export class NftCard extends LitElement {
         }
     }
 
+    public renderErrorTemplate() {
+        return html`
+                <div class="error">
+                    <div class="error-moji">¯\\_(ツ)_/¯</div>
+                    <div class="error-message">Problem loading asset.</div>
+                </div>`
+    }
+
+    public renderLoaderTemplate() {
+        return html`<loader-element></loader-element>`
+    }
+
+    public renderInnerCardTemplate() {
+        return html`
+            <nft-card-front
+              .horizontal=${this.horizontal}
+              @button-event="${this.eventHandler}"
+              .asset=${this.asset}
+              .state=${({
+            isOwnedByAccount: this.isOwnedByAccount,
+            isMatchingNetwork: this.isMatchingNetwork,
+            isUnlocked: this.isUnlocked,
+            hasWeb3: this.hasWeb3,
+            network: this.network
+        })}
+              .account=${this.account}
+            ></nft-card-front>
+            <nft-card-back
+              .horizontal=${this.horizontal}
+              .traitData=${this.traitData}
+            ></nft-card-back>
+            `
+    }
+
     /**
      * Implement `render` to define a template for your element.
      */
@@ -164,28 +216,9 @@ export class NftCard extends LitElement {
          style=${styleMap({width: this.width, height: this.height})}
        >
        <div class="card-inner">
-          ${this.loading ?
-            html`<loader-element></loader-element>`
-            :
-            html`
-            <nft-card-front
-              .horizontal=${this.horizontal}
-              @button-event="${this.eventHandler}"
-              .asset=${this.asset}
-              .state=${({
-                isOwnedByAccount: this.isOwnedByAccount,
-                isMatchingNetwork: this.isMatchingNetwork,
-                isUnlocked: this.isUnlocked,
-                hasWeb3: this.hasWeb3,
-                network: this.network
-               })}
-              .account=${this.account}
-            ></nft-card-front>
-            <nft-card-back
-              .horizontal=${this.horizontal}
-              .traitData=${this.traitData}
-            ></nft-card-back>
-            `
+          ${this.loading ? this.renderLoaderTemplate() :
+            this.error ? this.renderErrorTemplate() :
+            this.renderInnerCardTemplate()
         }
        </div>
      `
@@ -216,16 +249,6 @@ export class NftCard extends LitElement {
 
     private goToOpenSea() {
         window.open(this.asset.openseaLink, '_blank')
-    }
-
-    private getNetwork() {
-        switch (this.network) {
-            case 'main':
-                return Network.Main
-            case 'rinkeby':
-                return Network.Rinkeby
-            default: return Network.Main
-        }
     }
 
     /**
