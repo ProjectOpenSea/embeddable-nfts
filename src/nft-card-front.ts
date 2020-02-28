@@ -1,7 +1,3 @@
-/**
- * Import LitElement base class, html helper function,
- * and TypeScript decorators
- */
 import {
   LitElement,
   html,
@@ -160,6 +156,10 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-action-info #info-icon:hover {
         opacity: 1;
       }
+      .asset-link {
+        text-decoration: none;
+        color: #222222;
+      }
     `
   }
   @property({type: Object}) public asset?: OpenSeaAsset
@@ -175,14 +175,14 @@ export class NftCardFrontTemplate extends LitElement {
     // Assumption: If the traitData gets updated we should rebuild the
     // traits object that populates UI
     // Assumption: This will ONLY get called once per refresh
-    changedProperties.forEach((_oldValue: string, propName: string) => {
+    changedProperties.forEach(async (_oldValue: string, propName: string) => {
       if (propName === 'asset') {
         // We got the data so we are done loading
         // this.isLoading = false
 
         // Check for a sell order to populate the UI with the sell information
         // TODO: We will be using lastSale here once added to SDK
-        if (this.asset && this.asset.sellOrders && this.asset.sellOrders.length > 0) {
+        if (this.asset?.sellOrders && this.asset.sellOrders.length > 0) {
           const order: Order = this.asset.sellOrders[0]
           const paymentToken = order.paymentTokenContract
           const decimals = paymentToken ? paymentToken.decimals : 18 // Default decimals to 18
@@ -197,7 +197,7 @@ export class NftCardFrontTemplate extends LitElement {
         }
 
         // Tell the component to update with new state
-        this.requestUpdate()
+        await this.requestUpdate()
       }
     })
   }
@@ -231,8 +231,10 @@ export class NftCardFrontTemplate extends LitElement {
 
     return (html`
     <div class="asset-detail-price">
-      ${currentPriceTemplate}
-      ${prevPriceTemplate}
+      <a class="asset-link" href="${this.asset?.openseaLink}">
+        ${currentPriceTemplate}
+        ${prevPriceTemplate}
+       </a>
     </div>
     `)
   }
@@ -263,10 +265,12 @@ export class NftCardFrontTemplate extends LitElement {
         </div>
 
         <div class="asset-image-container">
-          <div
-            class="asset-image"
-            style=${styleMap({'background-image': `url(${this.asset.imageUrl})`})}
-          ></div>
+            <a href="${this.asset.openseaLink}">
+                  <div
+                      class="asset-image"
+                      style=${styleMap({'background-image': `url(${this.asset.imageUrl})`})}
+                  ></div>
+            </a>
         </div>
 
         <div class="asset-details-container">
@@ -290,7 +294,7 @@ export class NftCardFrontTemplate extends LitElement {
           </div>
           <div class="spacer"></div>
           <div class="asset-detail-name">
-            <p>${this.asset.name}</p>
+            <a class="asset-link" href="${this.asset.openseaLink}">${this.asset.name}</a>
           </div>
           ${this.getAssetPriceTemplate()}
           <div class="asset-action-buy">

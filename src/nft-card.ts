@@ -5,7 +5,7 @@ import { styleMap } from 'lit-html/directives/style-map'
 import Web3 from 'web3'
 
 import { Network, OpenSeaPort } from 'opensea-js'
-import { OpenSeaAsset, OrderSide } from 'opensea-js/lib/types'
+import { OpenSeaAsset } from 'opensea-js/lib/types'
 
 import { NO_WEB3_ERROR } from './constants'
 
@@ -154,12 +154,8 @@ export class NftCard extends LitElement {
     }
 
     public async buyAsset() {
-        if (this.isUnlocked) {
-            const order = await this.seaport.api.getOrder({
-                side: OrderSide.Sell,
-                asset_contract_address: this.asset.assetContract.address,
-                token_id: this.tokenId
-            })
+        if (this.isUnlocked && this.asset.sellOrders) {
+            const order = this.asset.sellOrders[0]
             await this.seaport.fulfillOrder({order, accountAddress: this.account})
         }
     }
@@ -198,15 +194,7 @@ export class NftCard extends LitElement {
             `
     }
 
-    /**
-     * Implement `render` to define a template for your element.
-     */
     public render() {
-        /**
-         * Use JavaScript expressions to include property values in
-         * the element template.
-         */
-
         return html`
        <style>
          @import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500&display=swap');
@@ -228,7 +216,7 @@ export class NftCard extends LitElement {
         this.flippedCard = !this.flippedCard
     }
 
-    private eventHandler(event: ButtonEvent) {
+    private async eventHandler(event: ButtonEvent) {
         const {detail} = event
         switch (detail.type) {
             case 'view':
@@ -236,10 +224,10 @@ export class NftCard extends LitElement {
                 this.goToOpenSea()
                 break
             case 'unlock':
-                this.connectWallet()
+                await this.connectWallet()
                 break
             case 'buy':
-                this.buyAsset()
+                await this.buyAsset()
                 break
             case 'flip':
                 this.flipCard()
@@ -270,7 +258,7 @@ export class NftCard extends LitElement {
                     }
                 })
             }
-            this.isMatchingNetwork = this.networkFromId(this.provider.networkVersion) === this.network
+            this.isMatchingNetwork = NftCard.networkFromId(this.provider.networkVersion) === this.network
             if (this.provider.selectedAddress) {
                 this.account = this.provider.selectedAddress
                 this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
@@ -283,7 +271,7 @@ export class NftCard extends LitElement {
 
     // Given the network version this method returns the network name
     // Since only Main & Rinkeby are supported we ignore the other networks
-    private networkFromId(id: string) {
+    private static networkFromId(id: string) {
         switch (id) {
             case '1': return Network.Main
             case '4': return Network.Rinkeby
