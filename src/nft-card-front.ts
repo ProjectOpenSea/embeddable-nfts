@@ -12,6 +12,9 @@ import { styleMap } from 'lit-html/directives/style-map'
 
 import { OpenSeaAsset, OpenSeaFungibleToken, Order, Network } from 'opensea-js/lib/types'
 
+/* lit-element classes */
+import './info-button'
+
 enum ButtonType {
   Manage = 'manage',
   Buy = 'buy',
@@ -57,6 +60,7 @@ export class NftCardFrontTemplate extends LitElement {
         position: relative;
         width: 100%;
         height: 100%;
+        transform: translateY(0);
       }
       .is-vertical {
         grid-template-columns: 1fr;
@@ -90,7 +94,7 @@ export class NftCardFrontTemplate extends LitElement {
         display: grid;
         grid-template-rows: auto;
         grid-template-columns: 1fr 1fr;
-        padding: 25px;
+        padding: 20px;
         align-items: center;
       }
       .asset-detail {
@@ -142,20 +146,6 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-action-buy button:hover {
         background: rgb(21, 61, 98);
       }
-      .asset-action-info {
-        position: absolute;
-        right: 5px;
-        top: 5px;
-      }
-      .asset-action-info #info-icon {
-        cursor: pointer;
-        transition: 200ms;
-        opacity: 0.4;
-        backface-visibility: hidden;
-      }
-      .asset-action-info #info-icon:hover {
-        opacity: 1;
-      }
       .asset-link {
         text-decoration: none;
         color: #222222;
@@ -202,11 +192,16 @@ export class NftCardFrontTemplate extends LitElement {
     })
   }
 
-  public getAssetImageTemplate(imageUrl: string) {
+  private getAssetImageTemplate() {
     return (html`
       <div class="asset-image-container">
-        <img src="${imageUrl}"  alt=""/>
-      </div>
+            <a href="${this.asset?.openseaLink}" target="_blank">
+                  <div
+                      class="asset-image"
+                      style=${styleMap({'background-image': `url(${this.asset?.imageUrl})`})}
+                  ></div>
+            </a>
+        </div>
     `)
   }
 
@@ -231,13 +226,35 @@ export class NftCardFrontTemplate extends LitElement {
 
     return (html`
     <div class="asset-detail-price">
-      <a class="asset-link" href="${this.asset?.openseaLink}">
+      <a class="asset-link" href="${this.asset?.openseaLink}" target="_blank">
         ${currentPriceTemplate}
         ${prevPriceTemplate}
        </a>
     </div>
     `)
   }
+
+  // public getInfoButtonTemplate() {
+  //   return (html`
+  //       <div class="asset-action-info">
+  //         <svg
+  //           id="info-btn"
+  //           @click="${(e: any) => this.eventHandler(e, 'flip')}"
+  //           xmlns="http://www.w3.org/2000/svg"
+  //           width="24"
+  //           height="24"
+  //           viewBox="0 0 24 24"
+  //         >
+  //           <path d="M0 0h24v24H0z" fill="white" />
+  //           <path
+  //             id="info-icon"
+  //             fill="rgb(82, 87, 89)"
+  //             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+  //           />
+  //         </svg>
+  //       </div>
+  //   `)
+  // }
 
   /**
    * Implement `render` to define a template for your element.
@@ -246,32 +263,12 @@ export class NftCardFrontTemplate extends LitElement {
     if (!this.asset) { return undefined } // If there is no asset then we can't render
     return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
-        <div class="asset-action-info">
-          <svg
-            id="info-btn"
-            @click="${(e: any) => this.eventHandler(e, 'flip')}"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
-            <path d="M0 0h24v24H0z" fill="white" />
-            <path
-              id="info-icon"
-              fill="rgb(82, 87, 89)"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-            />
-          </svg>
-        </div>
+        <info-button
+            style="position: absolute; top: 5px; left: 5px"
+            @flip-event="${(e: any) => this.eventHandler(e, 'flip')}"
+        ></info-button>
 
-        <div class="asset-image-container">
-            <a href="${this.asset.openseaLink}">
-                  <div
-                      class="asset-image"
-                      style=${styleMap({'background-image': `url(${this.asset.imageUrl})`})}
-                  ></div>
-            </a>
-        </div>
+        ${this.getAssetImageTemplate()}
 
         <div class="asset-details-container">
           <div class="asset-detail">
@@ -294,7 +291,7 @@ export class NftCardFrontTemplate extends LitElement {
           </div>
           <div class="spacer"></div>
           <div class="asset-detail-name">
-            <a class="asset-link" href="${this.asset.openseaLink}">${this.asset.name}</a>
+            <a class="asset-link" href="${this.asset.openseaLink}" target="_blank">${this.asset.name}</a>
           </div>
           ${this.getAssetPriceTemplate()}
           <div class="asset-action-buy">
@@ -309,7 +306,7 @@ export class NftCardFrontTemplate extends LitElement {
    * EventHandler - Dispatch event allowing parent to handle click event
    * '_event' isn't used here but it's needed to call the handler
    */
-  private eventHandler(_event: any, type: string) {
+  public eventHandler(_event: any, type: string) {
     const buttonEvent = new CustomEvent('button-event', {
       detail: {
         type
@@ -321,7 +318,7 @@ export class NftCardFrontTemplate extends LitElement {
   private getButtonTemplate() {
 
     let btnType: ButtonType
-
+    console.log(this.state)
     if (this.state.hasWeb3) {
       if (this.state.isUnlocked) {
         if (this.state.isMatchingNetwork) {

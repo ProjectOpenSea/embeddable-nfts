@@ -2,10 +2,6 @@ import { LitElement, html, customElement, property, css } from 'lit-element'
 
 import { styleMap } from 'lit-html/directives/style-map'
 
-/**
- * Use the customElement decorator to define your class as
- * a custom element. Registers <my-element> as an HTML tag.
- */
 @customElement('pill-element')
 export class PillTemplate extends LitElement {
   /**

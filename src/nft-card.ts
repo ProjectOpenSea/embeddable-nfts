@@ -28,6 +28,15 @@ export interface ButtonEvent {
     }
 }
 
+const HORIZONTAL_MIN_CARD_HEIGHT = '190px'
+const VERT_MIN_CARD_HEIGHT = '670px'
+
+const VERT_CARD_HEIGHT = '560px'
+const VERT_CARD_WIDTH = '388px'
+
+const HORIZONTAL_CARD_HEIGHT = '250px'
+const HORIZONTAL_CARD_WIDTH = '670px'
+
 /**
  * Nft-card element that manages front & back of card.
  * Facilitates aquisition and distribution data between
@@ -85,8 +94,9 @@ export class NftCard extends LitElement {
     @property({type: Boolean}) public horizontal: boolean = false
     @property({type: String}) public contractAddress: string = ''
     @property({type: String}) public tokenId: string = ''
-    @property({type: String}) public width: string = '388px'
-    @property({type: String}) public height: string = '560px'
+    @property({type: String}) public width: string = ''
+    @property({type: String}) public height: string = ''
+    @property({type: String}) public minHeight: string = ''
     @property({type: String}) public network: Network = Network.Main
 
     @property({type: Object}) private asset!: OpenSeaAsset
@@ -100,7 +110,7 @@ export class NftCard extends LitElement {
     @property({type: Boolean}) private loading = true
     @property({type: Boolean}) private error = false
     @property({type: Boolean}) private isOwnedByAccount = false
-    @property({type: Boolean}) private isUnlocked: boolean = false
+    @property({type: Boolean}) private isUnlocked: boolean = true
     @property({type: Boolean}) private hasWeb3: boolean = false
     @property({type: Boolean}) private isMatchingNetwork: boolean = false
 
@@ -123,8 +133,13 @@ export class NftCard extends LitElement {
         super.connectedCallback()
 
         // Set default dimensions
-        this.width = this.horizontal ? '670px' : '388px'
-        this.height = this.horizontal ? '250px' : '560px'
+        if (!this.width) {
+            this.width =  this.horizontal ? HORIZONTAL_CARD_WIDTH : VERT_CARD_WIDTH
+        }
+        if (!this.height) {
+            this.height = this.horizontal ? HORIZONTAL_CARD_HEIGHT : VERT_CARD_HEIGHT
+        }
+        this.minHeight = this.horizontal ?  HORIZONTAL_MIN_CARD_HEIGHT : VERT_MIN_CARD_HEIGHT
 
         this.hasWeb3 = !!window.web3
 
@@ -148,14 +163,20 @@ export class NftCard extends LitElement {
 
         this.loading = false
 
+        this.isMatchingNetwork = NftCard.networkFromId(this.provider.networkVersion) === this.network
+        console.log(this.isMatchingNetwork)
         // Tell the component to update with new state
         await this.requestUpdate()
 
         // Watch for the account to change then update state of component
-        // window.ethereum.on('accountsChanged',  (accounts: Array<string>) => {
-        //     this.account = accounts.length > 0 ? accounts[0] : ''
-        //     console.log('accountsChanged', accounts)
-        // })
+        this.provider.on('accountsChanged',  (accounts: Array<string>) => {
+            this.account = accounts.length > 0 ? accounts[0] : ''
+            this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
+        })
+        this.provider.on('networkChanged', (networkId: string) => {
+            const network =  NftCard.networkFromId(networkId)
+            this.isMatchingNetwork = network === this.network
+        })
     }
 
     public async buyAsset() {
@@ -184,17 +205,19 @@ export class NftCard extends LitElement {
               @button-event="${this.eventHandler}"
               .asset=${this.asset}
               .state=${({
-            isOwnedByAccount: this.isOwnedByAccount,
-            isMatchingNetwork: this.isMatchingNetwork,
-            isUnlocked: this.isUnlocked,
-            hasWeb3: this.hasWeb3,
-            network: this.network
-        })}
+                    isOwnedByAccount: this.isOwnedByAccount,
+                    isMatchingNetwork: this.isMatchingNetwork,
+                    isUnlocked: this.isUnlocked,
+                    hasWeb3: this.hasWeb3,
+                    network: this.network
+                })}
               .account=${this.account}
             ></nft-card-front>
             <nft-card-back
               .horizontal=${this.horizontal}
               .traitData=${this.traitData}
+              .openseaLink="${this.asset.openseaLink}"
+              @flip-event="${this.eventHandler}"
             ></nft-card-back>
             `
     }
@@ -206,8 +229,9 @@ export class NftCard extends LitElement {
        </style>
        <div
          class="card ${this.flippedCard ? 'flipped-card' : ''}"
-         style=${styleMap({width: this.width, height: this.height})}
+         style=${styleMap({width: this.width, height: this.height, minHeight: this.minHeight})}
        >
+       
        <div class="card-inner">
           ${this.loading ? this.renderLoaderTemplate() :
             this.error ? this.renderErrorTemplate() :
@@ -252,8 +276,6 @@ export class NftCard extends LitElement {
      */
     private async connectWallet() {
         if (window.web3) {
-            this.isUnlocked = true
-
             // If it is modern dapp then show prompt requesting access
             if (window.ethereum) {
                 const ACCESS_DENIED = 4001
@@ -263,12 +285,13 @@ export class NftCard extends LitElement {
                     }
                 })
             }
-            this.isMatchingNetwork = NftCard.networkFromId(this.provider.networkVersion) === this.network
+
             if (this.provider.selectedAddress) {
                 this.account = this.provider.selectedAddress
                 this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
             }
         } else {
+            this.isUnlocked = false
             alert(NO_WEB3_ERROR)
             throw new Error(NO_WEB3_ERROR)
         }

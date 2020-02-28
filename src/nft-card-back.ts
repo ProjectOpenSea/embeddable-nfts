@@ -3,6 +3,8 @@ import { styleMap } from 'lit-html/directives/style-map'
 import { classMap } from 'lit-html/directives/class-map'
 import { OpenSeaTraitStats } from 'opensea-js/lib/types'
 
+import './info-button'
+
 enum TraitType {
   Property = 'prop',
   Stat = 'stat',
@@ -39,10 +41,32 @@ const TRAIT_HEADER_MARGIN_BOTTOM = 8
 
 const RANK_HEIGHT = 40
 const RANK_MARGIN = 8
-
 const rankStyle = {
     height: RANK_HEIGHT + 'px',
     marginBottom: RANK_MARGIN + 'px'
+}
+
+const PROP_HEIGHT = 50
+const PROP_MARGIN = RANK_MARGIN
+const propStyle = {
+  height: PROP_HEIGHT + 'px',
+  marginBottom: PROP_MARGIN + 'px'
+}
+
+const BOOST_HEIGHT = RANK_HEIGHT
+const BOOST_MARGIN = RANK_MARGIN
+const BOOST_PADDING = RANK_MARGIN
+const boostStyle = {
+  height: BOOST_HEIGHT + 'px',
+  marginBottom: BOOST_MARGIN + 'px',
+  paddingBottom: BOOST_MARGIN + 'px'
+}
+
+const STAT_HEIGHT = PROP_HEIGHT
+const STAT_MARGIN = RANK_MARGIN
+const statStyle = {
+  height: RANK_HEIGHT + 'px',
+  marginBottom: RANK_MARGIN + 'px'
 }
 
 @customElement('nft-card-back')
@@ -50,12 +74,16 @@ export class NftCardBackTemplate extends LitElement {
 
   static get styles() {
     return css`
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
       .card-back {
         position: absolute;
         backface-visibility: hidden;
         width: 100%;
         height: 100%;
-        transform: rotateY(180deg);
+        transform: rotateY(180deg) translateZ(1px);
         top: 0;
         overflow: hidden;
       }
@@ -64,7 +92,7 @@ export class NftCardBackTemplate extends LitElement {
       }
       .card-back-inner {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, minmax(auto, 33%));
         column-gap: 10px;
         margin: 16px 24px;
       }
@@ -99,9 +127,14 @@ export class NftCardBackTemplate extends LitElement {
         background: #edfbff;
         border: 1px solid #2d9cdb;
         border-radius: 5px;
-        margin-bottom: 8px;
-        display: grid;
-        grid-template-columns: 50% 50%;
+        width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
+        text-align: center;
+        border: 1px solid #2d9cdb;
+        background-color: #edfbff;
+        border-radius: 6px;
+        padding: 8px;
       }
       .trait_property p {
         margin: 7px 0;
@@ -110,16 +143,20 @@ export class NftCardBackTemplate extends LitElement {
         color: rgba(0, 0, 0, 0.87);
       }
       .trait_property .trait_property-type {
+        margin: 0;
+        font-size: 11px;
         text-transform: uppercase;
         font-weight: 500;
         color: #2d9cdb;
-        opacity: 0.8;
-        margin: 7px 10px;
+        opacity: .8;
       }
       .trait_property .trait_property-value {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
+        margin: 0;
+        color: rgba(0,0,0,.87);
+        font-size: 15px;
       }
       .trait_ranking {
         margin-bottom: 16px;
@@ -128,6 +165,7 @@ export class NftCardBackTemplate extends LitElement {
       .trait_ranking .trait_ranking-header {
         display: flex;
         justify-content: space-between;
+        align-items: center;
       }
       .trait_ranking .trait_ranking-header .trait_ranking-header-name {
         color: rgba(0, 0, 0, 0.87);
@@ -173,7 +211,7 @@ export class NftCardBackTemplate extends LitElement {
       }
       .stat-value {
         color: #2d9cdb;
-        font-size: 34px;
+        font-size: 28px;
         font-weight: 100;
         margin-left: 5px;
       }
@@ -202,6 +240,7 @@ export class NftCardBackTemplate extends LitElement {
   }
 
   @property({type: Object}) public traitData!: TraitData
+  @property({type: Object}) public openseaLink?: string
   @property({type: Boolean}) public loading = true
   @property({type: Boolean}) public horizontal!: boolean
   @property({type: Number}) public cardHeight!: number
@@ -236,10 +275,22 @@ export class NftCardBackTemplate extends LitElement {
     }
   }
 
+  public async connectedCallback() {
+    super.connectedCallback()
+    this.render()
+    this.requestUpdate()
+  }
+
   public getBoostsTemplate(boosts: Trait[]) {
     if (boosts.length <= 0) {
       return undefined // Don't render if empty array
     }
+
+    const traitHeightTotal = (TRAIT_HEADER_HEIGHT + TRAIT_HEADER_MARGIN_BOTTOM)
+    const boostHeightTotal = BOOST_HEIGHT + BOOST_MARGIN + BOOST_PADDING
+    const numBoostsRender = Math.floor((this.cardHeight - traitHeightTotal) / (boostHeightTotal)) - 1
+    const numBoostsRemaining = boosts.length - numBoostsRender
+
     return html`
       <div class="trait-header">
         <div class="trait-icon">
@@ -258,9 +309,9 @@ export class NftCardBackTemplate extends LitElement {
         </div>
         <p class="attribute-title">Boosts</p>
       </div>
-      ${boosts.map(
+      ${boosts.slice(0, numBoostsRender).map(
         ({trait_type, value}) => html`
-          <div class="trait_boost">
+          <div class="trait_boost" style="${styleMap(boostStyle)}" >
             <div class="trait_boost-value">
               <p>+${value}</p>
             </div>
@@ -270,6 +321,7 @@ export class NftCardBackTemplate extends LitElement {
           </div>
         `
       )}
+      ${this.viewMoreTemplate(numBoostsRemaining)}
     `
   }
 
@@ -277,6 +329,11 @@ export class NftCardBackTemplate extends LitElement {
     if (stats.length <= 0) {
       return undefined // Don't render if empty array
     }
+    const traitHeightTotal = (TRAIT_HEADER_HEIGHT + TRAIT_HEADER_MARGIN_BOTTOM)
+
+    const numStatsRender = Math.floor((this.cardHeight - traitHeightTotal) / (STAT_HEIGHT + STAT_MARGIN)) - 1
+    const numStatsRemaining = stats.length - numStatsRender
+
     return html`
         <div class="trait-header">
           <div class="trait-icon">
@@ -295,9 +352,9 @@ export class NftCardBackTemplate extends LitElement {
           </div>
           <p class="attribute-title">Stats</p>
         </div>
-        ${stats.map(stat =>
+        ${stats.slice(0, numStatsRender).map(stat =>
           html`
-              <div class="stat">
+              <div class="stat" style="${styleMap(statStyle)}">
                 <div class="stat-value">${stat.value}</div>
                 <div class="stat-name">
                   ${NftCardBackTemplate.formatTraitType(stat.trait_type)}
@@ -305,6 +362,7 @@ export class NftCardBackTemplate extends LitElement {
               </div>
             `
         )}
+        ${this.viewMoreTemplate(numStatsRemaining)}
       `
   }
 
@@ -313,6 +371,7 @@ export class NftCardBackTemplate extends LitElement {
 
     const numRanksRender = Math.floor((this.cardHeight - traitHeightTotal) / (RANK_HEIGHT + RANK_MARGIN)) - 1
     const numRanksRemaining = rankings.length - numRanksRender
+
     return html`
       <div class="trait-header">
         <div class="trait-icon">
@@ -348,30 +407,44 @@ export class NftCardBackTemplate extends LitElement {
           </div>
         `
       )}
-      ${numRanksRemaining > 0 ?
-        html`<div class="remainingTraits">+${numRanksRemaining} more</div>`
-      : ''}
+      ${this.viewMoreTemplate(numRanksRemaining)}
     `
   }
 
   public getPropsTemplate(props: Trait[]) {
-    const DISPLAY_MAX = 3
-    const propsTemplate = []
-    for (let i = 0; i < props.length && i < DISPLAY_MAX; i++) {
-      propsTemplate.push(html`
-        <div class="trait_property">
-          <p class="trait_property-type">${NftCardBackTemplate.formatTraitType(props[i].trait_type)}</p>
-          <p class="trait_property-value">${props[i].value}</p>
-        </div>
-      `)
-    }
+    const traitHeightTotal = (TRAIT_HEADER_HEIGHT + TRAIT_HEADER_MARGIN_BOTTOM)
 
-    return propsTemplate
+    const numPropsRender = Math.floor((this.cardHeight - traitHeightTotal) / (PROP_HEIGHT + PROP_MARGIN)) - 1
+    const numPropsRemaining = props.length - numPropsRender
+
+    return html`${props.slice(0, numPropsRender).map(
+        ({trait_type, value }) =>
+            html`
+        <div class="trait_property" style="${styleMap(propStyle)}">
+          <p class="trait_property-type">${NftCardBackTemplate.formatTraitType(trait_type)}</p>
+          <p class="trait_property-value">${value}</p>
+        </div>
+      `)}
+      ${this.viewMoreTemplate(numPropsRemaining)}
+      `
+  }
+
+  private viewMoreTemplate(numRemaining: number) {
+    if(numRemaining <= 0) {
+      return null
+    } else {
+      return html`<a class="remainingTraits" href="${this.openseaLink}" target="_blank">+${numRemaining} more</a>`
+    }
   }
 
   public render() {
     return html`
       <div class="card-back">
+      <info-button
+            style="position: absolute; top: 5px; right: 5px"
+            @flip-event="${(_e: any) => this.dispatchEvent(new CustomEvent('flip-event', { detail: { type: 'flip' } }))}"
+        ></info-button>
+        
         <div
           class="card-back-inner ${classMap({'is-vertical': !this.horizontal})}"
         >
@@ -426,33 +499,33 @@ export class NftCardBackTemplate extends LitElement {
 
       this.traits[type + 's'].push({
         value: trait.value,
-        ...(type === TraitType.Ranking ? { max: collectionTraits[name].max as unknown as number } : {}),
+        ...(type === TraitType.Ranking ? {max: collectionTraits[name].max as unknown as number} : {}),
         trait_type: trait.trait_type
       })
     }
   }
 
   private getTraitType(trait: Trait, collectionTraits: CollectionTraits) {
-    if (this.isProperty(trait, collectionTraits)) {
+    if (NftCardBackTemplate.isProperty(trait, collectionTraits)) {
       return TraitType.Property
     }
-    if (this.isRanking(trait, collectionTraits)) {
+    if (NftCardBackTemplate.isRanking(trait, collectionTraits)) {
       return TraitType.Ranking
     }
-    if (this.isStat(trait)) {
+    if (NftCardBackTemplate.isStat(trait)) {
       return TraitType.Stat
     }
-    if (this.isBoost(trait)) {
+    if (NftCardBackTemplate.isBoost(trait)) {
       return TraitType.Boost
     }
     return null // Default return statement
   }
 
-  private isBoost(trait: Trait) {
+  private static isBoost(trait: Trait) {
     return trait.display_type && trait.display_type.includes('boost')
   }
 
-  private isRanking(trait: Trait, collectionTraits: CollectionTraits) {
+  private static isRanking(trait: Trait, collectionTraits: CollectionTraits) {
     return trait.display_type === null && trait.trait_type in collectionTraits && 'max' in collectionTraits[trait.trait_type]
   }
 
@@ -463,7 +536,7 @@ export class NftCardBackTemplate extends LitElement {
    * @param trait - The object containing an asset's trait
    * @return true if the trait is a 'Stat' and false otherwise
    */
-  private isStat(trait: Trait) {
+  private static isStat(trait: Trait) {
     return trait.display_type === 'number'
   }
 
@@ -475,10 +548,12 @@ export class NftCardBackTemplate extends LitElement {
    * @param trait - The object containing an asset's trait
    * @return true if the trait is a 'Property' and false otherwise
    */
-  private isProperty(trait: Trait, collectionTraits: CollectionTraits) {
+  private static isProperty(trait: Trait, collectionTraits: CollectionTraits) {
     return (
       trait.display_type === null &&
-      trait.trait_type in collectionTraits ? !('max' in collectionTraits[trait.trait_type]) : true
+      trait.trait_type in collectionTraits &&
+      !('max' in collectionTraits[trait.trait_type]) ||
+      !(trait.trait_type in collectionTraits)
     )
   }
 }
