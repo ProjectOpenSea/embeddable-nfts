@@ -85,8 +85,8 @@ export class NftCard extends LitElement {
     @property({type: Boolean}) public horizontal: boolean = false
     @property({type: String}) public contractAddress: string = ''
     @property({type: String}) public tokenId: string = ''
-    @property({type: String}) public width: string = this.horizontal ? '670px' : '388px'
-    @property({type: String}) public height: string = this.horizontal ? '250px' : '560px'
+    @property({type: String}) public width: string = '388px'
+    @property({type: String}) public height: string = '560px'
     @property({type: String}) public network: Network = Network.Main
 
     @property({type: Object}) private asset!: OpenSeaAsset
@@ -121,6 +121,11 @@ export class NftCard extends LitElement {
      */
     public async connectedCallback() {
         super.connectedCallback()
+
+        // Set default dimensions
+        this.width = this.horizontal ? '670px' : '388px'
+        this.height = this.horizontal ? '250px' : '560px'
+
         this.hasWeb3 = !!window.web3
 
         // Get the web3 provider
