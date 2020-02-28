@@ -1,6 +1,6 @@
 {
   "name": "embeddable_nfts",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Resuable, embeddable webcomponent for OpenSea assets.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
