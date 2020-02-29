@@ -124,6 +124,16 @@ export class NftCard extends LitElement {
         }
     }
 
+    // Given the network version this method returns the network name
+    // Since only Main & Rinkeby are supported we ignore the other networks
+    private static networkFromId(id: string) {
+        switch (id) {
+            case '1': return Network.Main
+            case '4': return Network.Rinkeby
+            default: return null
+        }
+    }
+
     /**
      * ConnectedCallback - Invoked when a component is added to the document’s DOM.
      * Grabs data from the OpenSea SDK and populates data objects to be passed to
@@ -164,12 +174,12 @@ export class NftCard extends LitElement {
         this.loading = false
 
         this.isMatchingNetwork = NftCard.networkFromId(this.provider.networkVersion) === this.network
-        console.log(this.isMatchingNetwork)
+
         // Tell the component to update with new state
         await this.requestUpdate()
 
         // Watch for the account to change then update state of component
-        this.provider.on('accountsChanged',  (accounts: Array<string>) => {
+        this.provider.on('accountsChanged',  (accounts: string[]) => {
             this.account = accounts.length > 0 ? accounts[0] : ''
             this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
         })
@@ -231,7 +241,7 @@ export class NftCard extends LitElement {
          class="card ${this.flippedCard ? 'flipped-card' : ''}"
          style=${styleMap({width: this.width, height: this.height, minHeight: this.minHeight})}
        >
-       
+
        <div class="card-inner">
           ${this.loading ? this.renderLoaderTemplate() :
             this.error ? this.renderErrorTemplate() :
@@ -294,16 +304,6 @@ export class NftCard extends LitElement {
             this.isUnlocked = false
             alert(NO_WEB3_ERROR)
             throw new Error(NO_WEB3_ERROR)
-        }
-    }
-
-    // Given the network version this method returns the network name
-    // Since only Main & Rinkeby are supported we ignore the other networks
-    private static networkFromId(id: string) {
-        switch (id) {
-            case '1': return Network.Main
-            case '4': return Network.Rinkeby
-            default: return null
         }
     }
 }

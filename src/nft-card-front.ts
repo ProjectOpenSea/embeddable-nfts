@@ -192,19 +192,6 @@ export class NftCardFrontTemplate extends LitElement {
     })
   }
 
-  private getAssetImageTemplate() {
-    return (html`
-      <div class="asset-image-container">
-            <a href="${this.asset?.openseaLink}" target="_blank">
-                  <div
-                      class="asset-image"
-                      style=${styleMap({'background-image': `url(${this.asset?.imageUrl})`})}
-                  ></div>
-            </a>
-        </div>
-    `)
-  }
-
   public getAssetPriceTemplate() {
     // TODO: Needs to account for tokens with images not symbols
     // If payment_token.image_url then use token image instead of symbol
@@ -315,10 +302,23 @@ export class NftCardFrontTemplate extends LitElement {
     this.dispatchEvent(buttonEvent)
   }
 
+  private getAssetImageTemplate() {
+    return (html`
+      <div class="asset-image-container">
+            <a href="${this.asset?.openseaLink}" target="_blank">
+                  <div
+                      class="asset-image"
+                      style=${styleMap({'background-image': `url(${this.asset?.imageUrl})`})}
+                  ></div>
+            </a>
+        </div>
+    `)
+  }
+
   private getButtonTemplate() {
 
     let btnType: ButtonType
-    console.log(this.state)
+
     if (this.state.hasWeb3) {
       if (this.state.isUnlocked) {
         if (this.state.isMatchingNetwork) {

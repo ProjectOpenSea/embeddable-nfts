@@ -1,5 +1,4 @@
-import {css, customElement, html, LitElement} from 'lit-element';
-
+import { css, customElement, html, LitElement } from 'lit-element'
 
 @customElement('info-button')
 export class InfoButtonTemplate extends LitElement {
