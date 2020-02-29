@@ -37,6 +37,11 @@ const VERT_CARD_WIDTH = '388px'
 const HORIZONTAL_CARD_HEIGHT = '250px'
 const HORIZONTAL_CARD_WIDTH = '670px'
 
+enum OrientationMode {
+    Auto = 'auto',
+    Manual = 'manual'
+}
+
 /**
  * Nft-card element that manages front & back of card.
  * Facilitates aquisition and distribution data between
@@ -92,6 +97,7 @@ export class NftCard extends LitElement {
 
     /* User configurable properties */
     @property({type: Boolean}) public horizontal: boolean = false
+    @property({type: Boolean}) public orientationMode: OrientationMode = OrientationMode.Auto
     @property({type: String}) public contractAddress: string = ''
     @property({type: String}) public tokenId: string = ''
     @property({type: String}) public width: string = ''
@@ -141,6 +147,11 @@ export class NftCard extends LitElement {
      */
     public async connectedCallback() {
         super.connectedCallback()
+
+        if(window.innerWidth < 600 && this.orientationMode === OrientationMode.Auto) {
+            console.log(this.orientationMode)
+            this.horizontal = false
+        }
 
         // Set default dimensions
         if (!this.width) {
