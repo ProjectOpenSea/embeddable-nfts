@@ -45,6 +45,8 @@ interface State {
   network: Network
 }
 
+const TOKEN_DECIMALS = 18
+
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
 
@@ -120,6 +122,16 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-detail-price-current {
         font-size: 18px;
         font-weight: 400;
+        display: flex;
+        flex-flow: row;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      .asset-detail-price-current img {
+         width: 15px;
+      }
+      .asset-detail-price-current-value {
+        margin-left: 5px;
       }
       .asset-detail-price-previous {
         font-size: 14px;
@@ -158,7 +170,6 @@ export class NftCardFrontTemplate extends LitElement {
   @property({type: Boolean}) public horizontal!: boolean
   @property({type: Object}) public state!: State
 
-  // @property({type: Boolean}) private isLoading: boolean = true
   @property({type: Object}) private lastSaleData?: LastSaleData
 
   public updated(changedProperties: Map<string, string>) {
@@ -167,15 +178,14 @@ export class NftCardFrontTemplate extends LitElement {
     // Assumption: This will ONLY get called once per refresh
     changedProperties.forEach(async (_oldValue: string, propName: string) => {
       if (propName === 'asset') {
-        // We got the data so we are done loading
-        // this.isLoading = false
 
         // Check for a sell order to populate the UI with the sell information
         // TODO: We will be using lastSale here once added to SDK
         if (this.asset?.sellOrders && this.asset.sellOrders.length > 0) {
           const order: Order = this.asset.sellOrders[0]
+          console.log(order)
           const paymentToken = order.paymentTokenContract
-          const decimals = paymentToken ? paymentToken.decimals : 18 // Default decimals to 18
+          const decimals = paymentToken ? paymentToken.decimals : TOKEN_DECIMALS // Default decimals to 18
           const currentPrice = order.currentPrice ? +order.currentPrice.toFixed() / Math.pow(10, decimals) : 0
           const expires = new Date(order.expirationTime.toFixed())
 
@@ -192,18 +202,31 @@ export class NftCardFrontTemplate extends LitElement {
     })
   }
 
+  private getCurrentPriceTemplate(paymentToken: OpenSeaFungibleToken, currentPrice: number) {
+    return html`
+      <div class="asset-detail-price-current">
+            ${ paymentToken.imageUrl ?  
+                html`<img src="${paymentToken.imageUrl}" alt="" ></img>` 
+                : paymentToken.symbol 
+              }
+            <div class="asset-detail-price-current-value">${currentPrice}</div>
+      </div>
+    `
+  }
+
   public getAssetPriceTemplate() {
     // TODO: Needs to account for tokens with images not symbols
     // If payment_token.image_url then use token image instead of symbol
     let prevPriceTemplate: TemplateResult = html``
     let currentPriceTemplate: TemplateResult = html``
 
-    if (this.lastSaleData && this.lastSaleData.paymentToken) {
-      const currentPriceSymbol = this.lastSaleData.paymentToken.symbol === 'ETH' ? 'Ξ ' : ''
-      currentPriceTemplate = html`<div class="asset-detail-price-current">${currentPriceSymbol} ${this.lastSaleData.currentPrice}</div>`
+    if (this.lastSaleData?.paymentToken) {
+      // const currentPriceSymbol = this.lastSaleData.paymentToken.symbol === 'ETH' ? 'Ξ ' : ''
+      currentPriceTemplate = this.getCurrentPriceTemplate(this.lastSaleData.paymentToken, this.lastSaleData.currentPrice)
+
     }
 
-    if (this.asset && this.asset.lastSale) {
+    if (this.asset?.lastSale) {
       // @ts-ignore ignore until LastSale type gets added to SDK
       const formattedPrevPrice = this.asset.lastSale.total_price / Math.pow(10, this.asset.lastSale.payment_token.decimals)
       // @ts-ignore ignore until LastSale type gets added to SDK
@@ -221,33 +244,13 @@ export class NftCardFrontTemplate extends LitElement {
     `)
   }
 
-  // public getInfoButtonTemplate() {
-  //   return (html`
-  //       <div class="asset-action-info">
-  //         <svg
-  //           id="info-btn"
-  //           @click="${(e: any) => this.eventHandler(e, 'flip')}"
-  //           xmlns="http://www.w3.org/2000/svg"
-  //           width="24"
-  //           height="24"
-  //           viewBox="0 0 24 24"
-  //         >
-  //           <path d="M0 0h24v24H0z" fill="white" />
-  //           <path
-  //             id="info-icon"
-  //             fill="rgb(82, 87, 89)"
-  //             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-  //           />
-  //         </svg>
-  //       </div>
-  //   `)
-  // }
-
   /**
    * Implement `render` to define a template for your element.
    */
   public render() {
-    if (!this.asset) { return undefined } // If there is no asset then we can't render
+    if (!this.asset) {
+      return undefined // If there is no asset then we can't render
+    }
     return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
         <info-button

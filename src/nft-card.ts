@@ -32,7 +32,9 @@ const HORIZONTAL_MIN_CARD_HEIGHT = '190px'
 const VERT_MIN_CARD_HEIGHT = '670px'
 
 const VERT_CARD_HEIGHT = '560px'
-const VERT_CARD_WIDTH = '388px'
+const VERT_CARD_WIDTH = '380px'
+
+const VERT_CARD_WIDTH_MOBILE = '90vw'
 
 const HORIZONTAL_CARD_HEIGHT = '250px'
 const HORIZONTAL_CARD_WIDTH = '670px'
@@ -148,14 +150,17 @@ export class NftCard extends LitElement {
     public async connectedCallback() {
         super.connectedCallback()
 
-        if(window.innerWidth < 600 && this.orientationMode === OrientationMode.Auto) {
-            console.log(this.orientationMode)
+        let vertCardWidth
+        if (window.innerWidth < 600 && this.orientationMode === OrientationMode.Auto) {
+            vertCardWidth = VERT_CARD_WIDTH_MOBILE
             this.horizontal = false
+        } else {
+            vertCardWidth = VERT_CARD_WIDTH
         }
 
         // Set default dimensions
         if (!this.width) {
-            this.width =  this.horizontal ? HORIZONTAL_CARD_WIDTH : VERT_CARD_WIDTH
+            this.width = this.horizontal ? HORIZONTAL_CARD_WIDTH : vertCardWidth
         }
         if (!this.height) {
             this.height = this.horizontal ? HORIZONTAL_CARD_HEIGHT : VERT_CARD_HEIGHT

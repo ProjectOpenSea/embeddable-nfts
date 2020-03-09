@@ -469,7 +469,8 @@ export class NftCardBackTemplate extends LitElement {
             <div class="trait_ranking-bar">
               <div
                 class="trait_ranking-bar-fill"
-                style=${styleMap({width: `${(+value / +(max || 1 /* If no max then just render full bar */)) * 100}%`})}
+                <!-- if no max then just render full bar -->
+                style=${styleMap({width: `${(+value / +(max || 1 )) * 100}%`})}
               ></div>
             </div>
           </div>
