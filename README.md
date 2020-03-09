@@ -5,6 +5,9 @@ Easily embed OpenSea listings in your website!
 
 `horizontal` - If this is present, the card will be rendered horizontally.
 
+`orientationMode` - If `auto` the card will switch to vertical 
+mode on mobile (breakpoint is at 600px). In `manual` mode the card will be unaffected.
+
 `width` - The width of the embeddable. Ex. values `100%` `250px`. Default: `388px`
 
 `height` - The height of the embeddable. Ex. values `40vh` `300px`. Default: `560px`
@@ -17,11 +20,16 @@ Easily embed OpenSea listings in your website!
 
 \*Required inputs
 
-Example:
+### Usage
+
+Add this to your `<head>` tag:
+```
+<script src="https://cdn.jsdelivr.net/gh/ProjectOpenSea/embeddable_nfts/dist/nft-card.min.js"></script>
+```
+
+Then add this into your code:
 ```
 <nft-card
-  width="100%"
-  height="250px"
   contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
   tokenId="2242579050293992223"
   network="mainnet"

@@ -44,6 +44,8 @@ enum OrientationMode {
     Manual = 'manual'
 }
 
+const MOBILE_BREAK_POINT = 600
+
 /**
  * Nft-card element that manages front & back of card.
  * Facilitates aquisition and distribution data between
@@ -151,7 +153,7 @@ export class NftCard extends LitElement {
         super.connectedCallback()
 
         let vertCardWidth
-        if (window.innerWidth < 600 && this.orientationMode === OrientationMode.Auto) {
+        if (window.innerWidth < MOBILE_BREAK_POINT && this.orientationMode === OrientationMode.Auto) {
             vertCardWidth = VERT_CARD_WIDTH_MOBILE
             this.horizontal = false
         } else {
