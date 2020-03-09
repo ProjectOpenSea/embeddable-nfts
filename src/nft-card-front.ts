@@ -183,7 +183,6 @@ export class NftCardFrontTemplate extends LitElement {
         // TODO: We will be using lastSale here once added to SDK
         if (this.asset?.sellOrders && this.asset.sellOrders.length > 0) {
           const order: Order = this.asset.sellOrders[0]
-          console.log(order)
           const paymentToken = order.paymentTokenContract
           const decimals = paymentToken ? paymentToken.decimals : TOKEN_DECIMALS // Default decimals to 18
           const currentPrice = order.currentPrice ? +order.currentPrice.toFixed() / Math.pow(10, decimals) : 0
@@ -200,18 +199,6 @@ export class NftCardFrontTemplate extends LitElement {
         await this.requestUpdate()
       }
     })
-  }
-
-  private getCurrentPriceTemplate(paymentToken: OpenSeaFungibleToken, currentPrice: number) {
-    return html`
-      <div class="asset-detail-price-current">
-            ${ paymentToken.imageUrl ?  
-                html`<img src="${paymentToken.imageUrl}" alt="" ></img>` 
-                : paymentToken.symbol 
-              }
-            <div class="asset-detail-price-current-value">${currentPrice}</div>
-      </div>
-    `
   }
 
   public getAssetPriceTemplate() {
@@ -303,6 +290,18 @@ export class NftCardFrontTemplate extends LitElement {
       }
     })
     this.dispatchEvent(buttonEvent)
+  }
+
+  private getCurrentPriceTemplate(paymentToken: OpenSeaFungibleToken, currentPrice: number) {
+    return html`
+      <div class="asset-detail-price-current">
+            ${ paymentToken.imageUrl ?
+                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
+                : paymentToken.symbol
+              }
+            <div class="asset-detail-price-current-value">${currentPrice}</div>
+      </div>
+    `
   }
 
   private getAssetImageTemplate() {
