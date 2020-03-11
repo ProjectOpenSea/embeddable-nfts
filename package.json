@@ -1,5 +1,5 @@
 {
-  "name": "embeddable_nfts",
+  "name": "embeddable-nfts",
   "version": "0.2.0",
   "description": "Resuable, embeddable webcomponent for OpenSea assets.",
   "scripts": {
