@@ -1,15 +1,6 @@
 # Embeddable NFTs
 Easily embed OpenSea listings in your website!
 
-<script defer src="/dist/nft-card.min.js"></script>
-
-<nft-card
-  contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
-  tokenId="2242579050293992223"
-  network="mainnet"
-  >
-</nft-card>
-
 ### Component inputs
 
 `horizontal` - If this is present, the card will be rendered horizontally.
