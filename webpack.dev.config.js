@@ -4,14 +4,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
   mode: 'development',
   devServer: {
-    contentBase: path.join(__dirname, 'example'),
+    contentBase: [path.join(__dirname, 'example'), path.join(__dirname, 'codemirror'), path.join(__dirname, 'dist')],
     compress: true,
     port: 9000,
-    open: true
+    publicPath: '/dist'
   },
   entry: './src/nft-card.ts',
   output: {
-    filename: 'bundle.js',
+    filename: 'nft-card.min.js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/'
   },

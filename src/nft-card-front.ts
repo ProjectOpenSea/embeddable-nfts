@@ -1,24 +1,54 @@
-/**
- * Import LitElement base class, html helper function,
- * and TypeScript decorators
- */
-import {LitElement, html, customElement, property, css} from 'lit-element'
+import {
+  LitElement,
+  html,
+  customElement,
+  property,
+  css,
+  TemplateResult
+} from 'lit-element'
 
-import {classMap} from 'lit-html/directives/class-map'
-import {styleMap} from 'lit-html/directives/style-map'
+import { classMap } from 'lit-html/directives/class-map'
+import { styleMap } from 'lit-html/directives/style-map'
 
-const BTN_TEXT = {
-  'manage': 'manage this item ❯',
-  'buy': 'buy this item ❯',
-  'view': 'view on opensea 🚢 ❯'
+import { OpenSeaAsset, OpenSeaFungibleToken, Order, Network } from 'opensea-js/lib/types'
+
+/* lit-element classes */
+import './info-button'
+
+enum ButtonType {
+  Manage = 'manage',
+  Buy = 'buy',
+  View = 'view',
+  SwitchNetwork = 'switchNetwork',
+  Unlock = 'unlock'
 }
+
+const BTN_TEXT: { [index: string]: string } = {
+  [ButtonType.Manage]: 'manage this item ❯',
+  [ButtonType.Buy]: 'buy this item ❯',
+  [ButtonType.View]: 'view on openSea ❯',
+  [ButtonType.SwitchNetwork]: 'switch to ',
+  [ButtonType.Unlock]: 'buy this item ❯'
+}
+
+interface LastSaleData {
+  paymentToken?: OpenSeaFungibleToken
+  currentPrice: number
+  expires: Date
+}
+
+interface State {
+  isOwnedByAccount: boolean
+  isMatchingNetwork: boolean
+  isUnlocked: boolean
+  hasWeb3: boolean
+  network: Network
+}
+
+const TOKEN_DECIMALS = 18
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
-  @property({type: Object}) public asset = {}
-  @property({type: String}) public account
-  @property({type: Object}) public loading = true
-  @property({type: Boolean}) public horizontal
 
   static get styles() {
     return css`
@@ -32,8 +62,7 @@ export class NftCardFrontTemplate extends LitElement {
         position: relative;
         width: 100%;
         height: 100%;
-        /* Remove when done with back face */
-        /* display: none; */
+        transform: translateY(0);
       }
       .is-vertical {
         grid-template-columns: 1fr;
@@ -67,15 +96,14 @@ export class NftCardFrontTemplate extends LitElement {
         display: grid;
         grid-template-rows: auto;
         grid-template-columns: 1fr 1fr;
-        padding: 25px;
+        padding: 20px;
         align-items: center;
       }
       .asset-detail {
         display: flex;
       }
       .asset-detail .asset-detail-type {
-        width: 100%;
-        height: 30px;
+        height: 35px;
         font-size: 12px;
         margin-right: 10px;
       }
@@ -94,6 +122,16 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-detail-price-current {
         font-size: 18px;
         font-weight: 400;
+        display: flex;
+        flex-flow: row;
+        justify-content: flex-end;
+        align-items: center;
+      }
+      .asset-detail-price-current img {
+         width: 15px;
+      }
+      .asset-detail-price-current-value {
+        margin-left: 5px;
       }
       .asset-detail-price-previous {
         font-size: 14px;
@@ -120,164 +158,98 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-action-buy button:hover {
         background: rgb(21, 61, 98);
       }
-      .asset-action-info {
-        position: absolute;
-        right: 10px;
-        top: 10px;
-      }
-      .asset-action-info #info-icon {
-        cursor: pointer;
-        transition: 200ms;
-        opacity: 0.4;
-        backface-visibility: hidden;
-      }
-      .asset-action-info #info-icon:hover {
-        opacity: 1;
+      .asset-link {
+        text-decoration: none;
+        color: #222222;
       }
     `
   }
+  @property({type: Object}) public asset?: OpenSeaAsset
+  @property({type: Boolean}) public isOwnedByAccount!: boolean
+  @property({type: String}) public account!: string
+  @property({type: Boolean}) public horizontal!: boolean
+  @property({type: Object}) public state!: State
 
-  /**
-   * EventHandler - Dispatch event allowing parent to handle click event
-   *
-   * @param e the event context
-   * @param type the event context
-   * @param data the event context
-   */
-  public eventHandler(e, type, data = {}) {
-    const event = new CustomEvent('new-event', {
-      detail: {
-        type,
-        data
-      }
-    })
-    this.dispatchEvent(event)
-  }
+  @property({type: Object}) private lastSaleData?: LastSaleData
 
-  public connectedCallback() {
-    super.connectedCallback()
-    // setTimeout(() => this.eventHandler('','flip'), 10);
-    // console.warn('I flip card for testing remove me later')
-  }
-
-  public updated(changedProperties: array) {
+  public updated(changedProperties: Map<string, string>) {
     // Assumption: If the traitData gets updated we should rebuild the
     // traits object that populates UI
     // Assumption: This will ONLY get called once per refresh
-    changedProperties.forEach((oldValue, propName) => {
+    changedProperties.forEach(async (_oldValue: string, propName: string) => {
       if (propName === 'asset') {
-        // We got the data so we are done loading
-        this.loading = false
 
         // Check for a sell order to populate the UI with the sell information
-        if (this.asset.sellOrders.length > 0) {
-          this.canBuy = true
-          const order = this.asset.sellOrders[0]
-          const token = order.paymentTokenContract
-          const currentPrice = order.currentPrice.toFixed() / Math.pow(10, token.decimals)
-          const expires = order.expirationTime.toFixed()
+        // TODO: We will be using lastSale here once added to SDK
+        if (this.asset?.sellOrders && this.asset.sellOrders.length > 0) {
+          const order: Order = this.asset.sellOrders[0]
+          const paymentToken = order.paymentTokenContract
+          const decimals = paymentToken ? paymentToken.decimals : TOKEN_DECIMALS // Default decimals to 18
+          const currentPrice = order.currentPrice ? +order.currentPrice.toFixed() / Math.pow(10, decimals) : 0
+          const expires = new Date(order.expirationTime.toFixed())
 
-          this.sellOrder = {
-            token,
+          this.lastSaleData = {
+            paymentToken,
             currentPrice,
             expires
           }
         }
 
         // Tell the component to update with new state
-        this.requestUpdate()
+        await this.requestUpdate()
       }
-      console.log(oldValue, propName)
     })
-  }
-
-  public getAssetImageTemplate(imageUrl) {
-    return (html`
-      <div class="asset-image-container">
-        <img src="${imageUrl}" />
-      </div>
-    `)
   }
 
   public getAssetPriceTemplate() {
     // TODO: Needs to account for tokens with images not symbols
     // If payment_token.image_url then use token image instead of symbol
-    let prevPriceTemplate = ''
-    let currentPriceTemplate = ''
+    let prevPriceTemplate: TemplateResult = html``
+    let currentPriceTemplate: TemplateResult = html``
 
-    if (this.sellOrder) {
-      const currentPriceSymbol = this.sellOrder.token.symbol === 'ETH' ? 'Ξ ' : ''
-      currentPriceTemplate = html`<div class="asset-detail-price-current">${currentPriceSymbol} ${this.sellOrder.currentPrice}</div>`
+    if (this.lastSaleData?.paymentToken) {
+      // const currentPriceSymbol = this.lastSaleData.paymentToken.symbol === 'ETH' ? 'Ξ ' : ''
+      currentPriceTemplate = this.getCurrentPriceTemplate(this.lastSaleData.paymentToken, this.lastSaleData.currentPrice)
+
     }
 
-    if (this.asset.lastSale) {
+    if (this.asset?.lastSale) {
+      // @ts-ignore ignore until LastSale type gets added to SDK
       const formattedPrevPrice = this.asset.lastSale.total_price / Math.pow(10, this.asset.lastSale.payment_token.decimals)
+      // @ts-ignore ignore until LastSale type gets added to SDK
       const prevPriceSymbol = this.asset.lastSale.payment_token.symbol === 'ETH' ? 'Ξ ' : ''
       prevPriceTemplate = html`<div class="asset-detail-price-previous">Prev. ${prevPriceSymbol} ${formattedPrevPrice}</div>`
     }
 
     return (html`
     <div class="asset-detail-price">
-      ${currentPriceTemplate}
-      ${prevPriceTemplate}
+      <a class="asset-link" href="${this.asset?.openseaLink}" target="_blank">
+        ${currentPriceTemplate}
+        ${prevPriceTemplate}
+       </a>
     </div>
     `)
-  }
-
-  public getButtonTemplate() {
-    let btnType
-    if (this.asset.isOwnedByAccount) {
-      btnType = 'manage'
-    } else if (this.canBuy) {
-      btnType = 'buy'
-    } else if (!this.canBuy) {
-      btnType = 'view'
-    }
-
-    return html`
-      <button
-        @click="${e => this.eventHandler(e, btnType)}"
-      >
-        ${BTN_TEXT[btnType]}
-      </button>
-    `
   }
 
   /**
    * Implement `render` to define a template for your element.
    */
   public render() {
-    if (this.isLoading) { return html`` }
+    if (!this.asset) {
+      return undefined // If there is no asset then we can't render
+    }
     return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
-        <div class="asset-action-info">
-          <svg
-            id="info-btn"
-            @click="${e => this.eventHandler(e, 'flip')}"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-          >
-            <path d="M0 0h24v24H0z" fill="white" />
-            <path
-              id="info-icon"
-              fill="rgb(82, 87, 89)"
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-            />
-          </svg>
-        </div>
+        <info-button
+            style="position: absolute; top: 5px; left: 5px"
+            @flip-event="${(e: any) => this.eventHandler(e, 'flip')}"
+        ></info-button>
 
-        <div class="asset-image-container">
-          <div
-            class="asset-image"
-            style=${styleMap({'background-image': `url(${this.asset.imageUrl})`})}
-          ></div>
-        </div>
+        ${this.getAssetImageTemplate()}
 
         <div class="asset-details-container">
           <div class="asset-detail">
-            <div class="pill-container asset-detail-type">
+            <div class="asset-detail-type">
               <pill-element
                 .imageUrl=${this.asset.assetContract.imageUrl}
                 .label=${this.asset.assetContract.name}
@@ -285,8 +257,8 @@ export class NftCardFrontTemplate extends LitElement {
                 border="1px solid #E2E6EF"
               ></pill-element>
             </div>
-            <!-- TODO: This badge is optional and must be rendered programmatically -->
-            <!-- <div class="pill-container asset-detail-badge">
+            <!-- This badge is optional and must be rendered programmatically -->
+            <!-- <div class="asset-detail-badge">
               <pill-element
                 label="New"
                 backgroundColor="#23DC7D"
@@ -296,7 +268,7 @@ export class NftCardFrontTemplate extends LitElement {
           </div>
           <div class="spacer"></div>
           <div class="asset-detail-name">
-            <p>${this.asset.name}</p>
+            <a class="asset-link" href="${this.asset.openseaLink}" target="_blank">${this.asset.name}</a>
           </div>
           ${this.getAssetPriceTemplate()}
           <div class="asset-action-buy">
@@ -304,6 +276,85 @@ export class NftCardFrontTemplate extends LitElement {
           </div>
         </div>
       </div>
+    `
+  }
+
+  /*
+   * EventHandler - Dispatch event allowing parent to handle click event
+   * '_event' isn't used here but it's needed to call the handler
+   */
+  public eventHandler(_event: any, type: string) {
+    const buttonEvent = new CustomEvent('button-event', {
+      detail: {
+        type
+      }
+    })
+    this.dispatchEvent(buttonEvent)
+  }
+
+  private getCurrentPriceTemplate(paymentToken: OpenSeaFungibleToken, currentPrice: number) {
+    return html`
+      <div class="asset-detail-price-current">
+            ${ paymentToken.imageUrl ?
+                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
+                : paymentToken.symbol
+              }
+            <div class="asset-detail-price-current-value">${currentPrice}</div>
+      </div>
+    `
+  }
+
+  private getAssetImageTemplate() {
+    return (html`
+      <div class="asset-image-container">
+            <a href="${this.asset?.openseaLink}" target="_blank">
+                  <div
+                      class="asset-image"
+                      style=${styleMap({'background-image': `url(${this.asset?.imageUrl})`})}
+                  ></div>
+            </a>
+        </div>
+    `)
+  }
+
+  private getButtonTemplate() {
+
+    let btnType: ButtonType
+
+    if (this.state.hasWeb3) {
+      if (this.state.isUnlocked) {
+        if (this.state.isMatchingNetwork) {
+          if (this.state.isOwnedByAccount) {
+            // The account owns asset
+            btnType = ButtonType.Manage
+          } else {
+            // Asset is for sale and not owned by currently selected account
+            btnType = ButtonType.Buy
+          }
+        } else {
+          // Network does not match or connected to unsupported network
+          btnType = ButtonType.SwitchNetwork // "switchNetwork" + this.state.network
+        }
+      } else {
+        // Wallet is locked or access not granted
+        btnType = ButtonType.Unlock
+      }
+    } else {
+      // No injected web3 found
+      btnType = ButtonType.View
+    }
+    // If we are informing the user to switch networks we need to append the
+    // network on which the asset resides
+    const btnText: string = btnType === ButtonType.SwitchNetwork ? BTN_TEXT[btnType] + this.state.network : BTN_TEXT[btnType]
+    const btnStyle = btnType === ButtonType.SwitchNetwork ? styleMap({'background': 'rgb(183, 183, 183)', 'cursor': 'not-allowed'}) : ''
+
+    return html`
+      <button
+        style=${btnStyle}
+        @click="${(e: any) => this.eventHandler(e, btnType)}"
+      >
+        ${btnText}
+      </button>
     `
   }
 }

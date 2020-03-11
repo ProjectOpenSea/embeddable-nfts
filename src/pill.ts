@@ -1,24 +1,16 @@
-/**
- * Import LitElement base class, html helper function,
- * and TypeScript decorators
- **/
-import {LitElement, html, customElement, property, css} from 'lit-element'
+import { LitElement, html, customElement, property, css } from 'lit-element'
 
-import {styleMap} from 'lit-html/directives/style-map'
+import { styleMap } from 'lit-html/directives/style-map'
 
-/**
- * Use the customElement decorator to define your class as
- * a custom element. Registers <my-element> as an HTML tag.
- */
 @customElement('pill-element')
-export class pillTemplate extends LitElement {
+export class PillTemplate extends LitElement {
   /**
    * Create an observed property. Triggers update on change.
    */
-  @property({type: String}) public imageUrl
-  @property({type: String}) public label
-  @property({type: String}) public backgroundColor
-  @property({type: String}) public textColor
+  @property({type: String}) public imageUrl = ''
+  @property({type: String}) public label = ''
+  @property({type: String}) public backgroundColor = ''
+  @property({type: String}) public textColor = ''
   @property({type: String}) public border = 'none'
   @property({type: Object}) public customStyles = {
     backgroundColor: this.backgroundColor,
@@ -26,9 +18,6 @@ export class pillTemplate extends LitElement {
     border: this.border
   }
 
-  // @TODO: Add dynamic styles using styleMap directive
-  // @TODO: Add dynamic style text color
-  // @TODO: Add dynamic style border & border color
   static get styles() {
     return css`
       .pill {
@@ -39,11 +28,12 @@ export class pillTemplate extends LitElement {
         border-radius: 60px;
         width: 100%;
         height: 100%;
-        padding: 2px;
+        padding: 6px 12px 6px 6px;
       }
       .pill img {
         height: 100%;
         border-radius: 50px;
+        margin-right: 6px;
         /* width: 100%; */
         /* padding: 3px; */
         /* box-sizing: border-box; */
@@ -52,6 +42,7 @@ export class pillTemplate extends LitElement {
         text-align: center;
         align-self: center;
         margin: auto;
+        white-space: nowrap;
         /* Centers text since grid-template-columns auto has glitch */
         /* transform: translateX(-10%); */
         backface-visibility: inherit;
@@ -83,7 +74,7 @@ export class pillTemplate extends LitElement {
     border: this.border
   })}"
       >
-        ${this.imageUrl ? html`<img src="${this.imageUrl}"></img>` : ''}
+        ${this.imageUrl ? html`<img src="${this.imageUrl}" alt=""/>` : ''}
         <p>${this.label}</p>
       </div>
     `

@@ -5,7 +5,7 @@ module.exports = {
   devtool: 'source-map',
   entry: './src/nft-card.ts',
   output: {
-    filename: 'opensea-nft-card.min.js',
+    filename: 'nft-card.min.js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/'
   },
