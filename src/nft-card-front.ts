@@ -3,8 +3,7 @@ import {
   html,
   customElement,
   property,
-  css,
-  TemplateResult
+  css
 } from 'lit-element'
 
 import { classMap } from 'lit-html/directives/class-map'
@@ -21,6 +20,11 @@ enum ButtonType {
   View = 'view',
   SwitchNetwork = 'switchNetwork',
   Unlock = 'unlock'
+}
+
+enum PriceType {
+  Current = 'current',
+  Previous = 'previous'
 }
 
 const BTN_TEXT: { [index: string]: string } = {
@@ -119,7 +123,7 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-detail-price {
         text-align: right;
       }
-      .asset-detail-price-current {
+      .asset-detail-price {
         font-size: 18px;
         font-weight: 400;
         display: flex;
@@ -127,13 +131,14 @@ export class NftCardFrontTemplate extends LitElement {
         justify-content: flex-end;
         align-items: center;
       }
-      .asset-detail-price-current img {
+      .asset-detail-price img {
+         margin-left: 5px;
          width: 15px;
       }
-      .asset-detail-price-current-value {
+      .asset-detail-price .value {
         margin-left: 5px;
       }
-      .asset-detail-price-previous {
+      .asset-detail-price .previous-value {
         font-size: 14px;
         color: #828282;
       }
@@ -172,6 +177,21 @@ export class NftCardFrontTemplate extends LitElement {
 
   @property({type: Object}) private lastSaleData?: LastSaleData
 
+  private static getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
+    return html`
+      <div class="asset-detail-price">
+            ${priceType === PriceType.Previous ? html`<div class="previous-value">Prev.</div>` : null}
+            ${ paymentToken.imageUrl ?
+                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
+                : paymentToken.symbol
+              }
+            <div class="asset-detail-price value ${priceType}-value">
+                 ${price}
+            </div>
+      </div>
+    `
+  }
+
   public updated(changedProperties: Map<string, string>) {
     // Assumption: If the traitData gets updated we should rebuild the
     // traits object that populates UI
@@ -202,24 +222,15 @@ export class NftCardFrontTemplate extends LitElement {
   }
 
   public getAssetPriceTemplate() {
-    // TODO: Needs to account for tokens with images not symbols
-    // If payment_token.image_url then use token image instead of symbol
-    let prevPriceTemplate: TemplateResult = html``
-    let currentPriceTemplate: TemplateResult = html``
 
-    if (this.lastSaleData?.paymentToken) {
-      // const currentPriceSymbol = this.lastSaleData.paymentToken.symbol === 'ETH' ? 'Ξ ' : ''
-      currentPriceTemplate = this.getCurrentPriceTemplate(this.lastSaleData.paymentToken, this.lastSaleData.currentPrice)
+    const currentPriceTemplate = this.lastSaleData?.paymentToken ?
+        NftCardFrontTemplate.getPriceTemplate(PriceType.Current, this.lastSaleData.paymentToken,
+            this.lastSaleData.currentPrice) : null
 
-    }
-
-    if (this.asset?.lastSale) {
-      // @ts-ignore ignore until LastSale type gets added to SDK
-      const formattedPrevPrice = this.asset.lastSale.total_price / Math.pow(10, this.asset.lastSale.payment_token.decimals)
-      // @ts-ignore ignore until LastSale type gets added to SDK
-      const prevPriceSymbol = this.asset.lastSale.payment_token.symbol === 'ETH' ? 'Ξ ' : ''
-      prevPriceTemplate = html`<div class="asset-detail-price-previous">Prev. ${prevPriceSymbol} ${formattedPrevPrice}</div>`
-    }
+    const prevPriceTemplate = this.lastSaleData?.paymentToken ?
+        NftCardFrontTemplate.getPriceTemplate(PriceType.Previous, this.lastSaleData.paymentToken,
+              // @ts-ignore ignore
+            this.asset?.lastSale?.total_price / Math.pow(10, this.asset?.lastSale?.payment_token.decimals)) : null
 
     return (html`
     <div class="asset-detail-price">
@@ -292,18 +303,6 @@ export class NftCardFrontTemplate extends LitElement {
     this.dispatchEvent(buttonEvent)
   }
 
-  private getCurrentPriceTemplate(paymentToken: OpenSeaFungibleToken, currentPrice: number) {
-    return html`
-      <div class="asset-detail-price-current">
-            ${ paymentToken.imageUrl ?
-                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
-                : paymentToken.symbol
-              }
-            <div class="asset-detail-price-current-value">${currentPrice}</div>
-      </div>
-    `
-  }
-
   private getAssetImageTemplate() {
     return (html`
       <div class="asset-image-container">
@@ -318,6 +317,17 @@ export class NftCardFrontTemplate extends LitElement {
   }
 
   private getButtonTemplate() {
+    return html`
+      <button
+        @click="${(e: any) => this.eventHandler(e, 'buy')}"
+      >
+        ${BTN_TEXT[ButtonType.Buy]}
+      </button>
+    `
+  }
+
+  // @ts-ignore
+  private _getButtonTemplate() {
 
     let btnType: ButtonType
 

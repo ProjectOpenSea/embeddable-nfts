@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ProjectOpenSea/embeddable_nfts.git"
+    "url": "git+https://github.com/ProjectOpenSea/embeddable-nfts.git"
   },
   "author": "Taylor Dawson",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ProjectOpenSea/embeddable_nfts/issues"
+    "url": "https://github.com/ProjectOpenSea/embeddable-nfts/issues"
   },
-  "homepage": "https://github.com/ProjectOpenSea/embeddable_nfts#readme",
+  "homepage": "https://github.com/ProjectOpenSea/embeddable-nfts#readme",
   "dependencies": {
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",

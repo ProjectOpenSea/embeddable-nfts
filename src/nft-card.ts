@@ -28,7 +28,7 @@ export interface ButtonEvent {
     }
 }
 
-const HORIZONTAL_MIN_CARD_HEIGHT = '190px'
+const HORIZONTAL_MIN_CARD_HEIGHT = '200px'
 const VERT_MIN_CARD_HEIGHT = '670px'
 
 const VERT_CARD_HEIGHT = '560px'
@@ -36,7 +36,7 @@ const VERT_CARD_WIDTH = '380px'
 
 const VERT_CARD_WIDTH_MOBILE = '90vw'
 
-const HORIZONTAL_CARD_HEIGHT = '250px'
+const HORIZONTAL_CARD_HEIGHT = '200px'
 const HORIZONTAL_CARD_WIDTH = '670px'
 
 enum OrientationMode {
@@ -100,7 +100,7 @@ export class NftCard extends LitElement {
     }
 
     /* User configurable properties */
-    @property({type: Boolean}) public horizontal: boolean = false
+    @property({type: Boolean}) public horizontal: boolean = true
     @property({type: Boolean}) public orientationMode: OrientationMode = OrientationMode.Auto
     @property({type: String}) public contractAddress: string = ''
     @property({type: String}) public tokenId: string = ''
@@ -275,6 +275,7 @@ export class NftCard extends LitElement {
 
     private async eventHandler(event: ButtonEvent) {
         const {detail} = event
+
         switch (detail.type) {
             case 'view':
             case 'manage':
