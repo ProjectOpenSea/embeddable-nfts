@@ -102,6 +102,7 @@ export class NftCard extends LitElement {
     /* User configurable properties */
     @property({type: Boolean}) public horizontal: boolean = true
     @property({type: Boolean}) public orientationMode: OrientationMode = OrientationMode.Auto
+    @property({type: String}) public tokenAddress: string = ''
     @property({type: String}) public contractAddress: string = ''
     @property({type: String}) public tokenId: string = ''
     @property({type: String}) public width: string = ''
@@ -151,6 +152,7 @@ export class NftCard extends LitElement {
      */
     public async connectedCallback() {
         super.connectedCallback()
+        this.tokenAddress =  this.contractAddress ? this.contractAddress : this.tokenAddress
 
         let vertCardWidth
         if (window.innerWidth < MOBILE_BREAK_POINT && this.orientationMode === OrientationMode.Auto) {
@@ -175,9 +177,11 @@ export class NftCard extends LitElement {
         this.provider = NftCard.getProvider()
 
         this.seaport = new OpenSeaPort(this.provider, {networkName: this.network})
-
+        console.log(this.tokenId)
         try {
-            this.asset = await this.seaport.api.getAsset(this.contractAddress, this.tokenId)
+            this.asset = await this.seaport.api.getAsset({ tokenAddress: this.tokenAddress, tokenId: this.tokenId })
+            console.log(this.asset)
+
             this.traitData = {
                 traits: this.asset.traits,
                 collectionTraits: this.asset.collection.traitStats

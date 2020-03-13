@@ -12,7 +12,7 @@ mode on mobile (breakpoint is at 600px). In `manual` mode the card will be unaff
 
 `height` - The height of the embeddable. Ex. values `40vh` `300px`. Default: `560px`
 
-`contractAddress`\*- The token's contract address.
+`tokenAddress`\*- The token's contract address.
 
 `tokenId`\* - The token Id of the asset.
 
@@ -30,7 +30,7 @@ Add this to your `<head>` tag:
 Then add this into your code:
 ```
 <nft-card
-  contractAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
+  tokenAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
   tokenId="2242579050293992223"
   network="mainnet"
   >

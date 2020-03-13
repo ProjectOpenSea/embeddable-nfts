@@ -9,7 +9,7 @@ import {
 import { classMap } from 'lit-html/directives/class-map'
 import { styleMap } from 'lit-html/directives/style-map'
 
-import { OpenSeaAsset, OpenSeaFungibleToken, Order, Network } from 'opensea-js/lib/types'
+import { OpenSeaAsset, OpenSeaFungibleToken, Network } from 'opensea-js/lib/types'
 
 /* lit-element classes */
 import './info-button'
@@ -35,12 +35,6 @@ const BTN_TEXT: { [index: string]: string } = {
   [ButtonType.Unlock]: 'buy this item ❯'
 }
 
-interface LastSaleData {
-  paymentToken?: OpenSeaFungibleToken
-  currentPrice: number
-  expires: Date
-}
-
 interface State {
   isOwnedByAccount: boolean
   isMatchingNetwork: boolean
@@ -48,8 +42,6 @@ interface State {
   hasWeb3: boolean
   network: Network
 }
-
-const TOKEN_DECIMALS = 18
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
@@ -175,62 +167,33 @@ export class NftCardFrontTemplate extends LitElement {
   @property({type: Boolean}) public horizontal!: boolean
   @property({type: Object}) public state!: State
 
-  @property({type: Object}) private lastSaleData?: LastSaleData
-
-  private static getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
+  private getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
     return html`
       <div class="asset-detail-price">
-            ${priceType === PriceType.Previous ? html`<div class="previous-value">Prev.</div>` : null}
+            ${priceType === PriceType.Previous ? html`<div class="previous-value">Prev.&nbsp;</div>` : null}
             ${ paymentToken.imageUrl ?
                 html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
-                : paymentToken.symbol
+                : html`<div class="previous-value">${paymentToken.symbol === 'ETH' ? 'Ξ' : paymentToken.symbol}</div>`
               }
             <div class="asset-detail-price value ${priceType}-value">
-                 ${price}
+                 ${this.toBaseDenomination(price, paymentToken.decimals)}
             </div>
       </div>
     `
   }
 
-  public updated(changedProperties: Map<string, string>) {
-    // Assumption: If the traitData gets updated we should rebuild the
-    // traits object that populates UI
-    // Assumption: This will ONLY get called once per refresh
-    changedProperties.forEach(async (_oldValue: string, propName: string) => {
-      if (propName === 'asset') {
-
-        // Check for a sell order to populate the UI with the sell information
-        // TODO: We will be using lastSale here once added to SDK
-        if (this.asset?.sellOrders && this.asset.sellOrders.length > 0) {
-          const order: Order = this.asset.sellOrders[0]
-          const paymentToken = order.paymentTokenContract
-          const decimals = paymentToken ? paymentToken.decimals : TOKEN_DECIMALS // Default decimals to 18
-          const currentPrice = order.currentPrice ? +order.currentPrice.toFixed() / Math.pow(10, decimals) : 0
-          const expires = new Date(order.expirationTime.toFixed())
-
-          this.lastSaleData = {
-            paymentToken,
-            currentPrice,
-            expires
-          }
-        }
-
-        // Tell the component to update with new state
-        await this.requestUpdate()
-      }
-    })
+  private toBaseDenomination(value: number, decimals: number) {
+    return +value.toFixed() / Math.pow(10, decimals)
   }
 
   public getAssetPriceTemplate() {
+    const sellOrder = this.asset?.sellOrders && this.asset?.sellOrders.length > 0 ? this.asset.sellOrders[0] : null
+    const currentPriceTemplate = sellOrder && sellOrder?.paymentTokenContract ?
+        this.getPriceTemplate(PriceType.Current, sellOrder?.paymentTokenContract, sellOrder?.currentPrice?.toNumber() || 0) : null
 
-    const currentPriceTemplate = this.lastSaleData?.paymentToken ?
-        NftCardFrontTemplate.getPriceTemplate(PriceType.Current, this.lastSaleData.paymentToken,
-            this.lastSaleData.currentPrice) : null
-
-    const prevPriceTemplate = this.lastSaleData?.paymentToken ?
-        NftCardFrontTemplate.getPriceTemplate(PriceType.Previous, this.lastSaleData.paymentToken,
-              // @ts-ignore ignore
-            this.asset?.lastSale?.total_price / Math.pow(10, this.asset?.lastSale?.payment_token.decimals)) : null
+    const prevPriceTemplate = this.asset?.lastSale?.paymentToken ?
+        this.getPriceTemplate(PriceType.Previous, this.asset?.lastSale?.paymentToken,
+            +this.asset?.lastSale?.totalPrice) : null
 
     return (html`
     <div class="asset-detail-price">
@@ -319,7 +282,7 @@ export class NftCardFrontTemplate extends LitElement {
   private getButtonTemplate() {
     return html`
       <button
-        @click="${(e: any) => this.eventHandler(e, 'buy')}"
+        @click="${(e: any) => this.eventHandler(e, 'view')}"
       >
         ${BTN_TEXT[ButtonType.Buy]}
       </button>
