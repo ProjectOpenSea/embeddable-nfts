@@ -1,40 +1,14 @@
 import { LitElement, html, customElement, property, css } from 'lit-element'
 import { styleMap } from 'lit-html/directives/style-map'
 import { classMap } from 'lit-html/directives/class-map'
-import { OpenSeaTraitStats } from 'opensea-js/lib/types'
 
 import './info-button'
+import { Trait, TraitData, Traits, TraitType } from './types'
 
-enum TraitType {
-  Property = 'prop',
-  Stat = 'stat',
-  Ranking = 'ranking',
-  Boost = 'boost',
-}
-
-interface Traits {
-  [index: string]: Trait[]
-  props: Trait[]
-  stats: Trait[]
-  rankings: Trait[]
-  boosts: Trait[]
-}
-
-interface Trait {
-  value: string | number
-  max?: string | number
-  display_type?: string
-  trait_type: string
-}
-
-interface TraitData {
-  traits: Trait[]
-  collectionTraits: CollectionTraits
-}
-
-interface CollectionTraits {
-  [index: string]: OpenSeaTraitStats
-}
+import {
+  formatTraitType,
+  getTraitType
+} from './utils'
 
 const TRAIT_HEADER_HEIGHT = 42
 const TRAIT_HEADER_MARGIN_BOTTOM = 8
@@ -78,6 +52,16 @@ const traitHeight = {
 
 @customElement('nft-card-back')
 export class NftCardBackTemplate extends LitElement {
+
+  @property({type: Object}) public traitData!: TraitData
+  @property({type: Object}) public openseaLink?: string
+  @property({type: Boolean}) public loading = true
+  @property({type: Boolean}) public horizontal!: boolean
+  @property({type: Number}) public cardHeight!: number
+  @property({type: Number}) public cardInnerHeight?: number
+  @property({type: Number}) public cardWidth!: number
+
+  @property({type: Object}) private traits?: Traits
 
   static get styles() {
     return css`
@@ -250,56 +234,6 @@ export class NftCardBackTemplate extends LitElement {
     `
   }
 
-  @property({type: Object}) public traitData!: TraitData
-  @property({type: Object}) public openseaLink?: string
-  @property({type: Boolean}) public loading = true
-  @property({type: Boolean}) public horizontal!: boolean
-  @property({type: Number}) public cardHeight!: number
-  @property({type: Number}) public cardInnerHeight?: number
-  @property({type: Number}) public cardWidth!: number
-
-  @property({type: Object}) private traits?: Traits
-
-  private static formatTraitType(traitType: string) {
-    return traitType.replace(/_/g, ' ')
-  }
-
-  private static isBoost(trait: Trait) {
-    return trait.display_type && trait.display_type.includes('boost')
-  }
-
-  private static isRanking(trait: Trait, collectionTraits: CollectionTraits) {
-    return trait.display_type === null && trait.trait_type in collectionTraits && 'max' in collectionTraits[trait.trait_type]
-  }
-
-  /**
-   * IsStat - Checks to see if the given trait is a 'Stat'
-   * A 'Stat' is defined as any trait that has a `display_type` of 'number'
-   *
-   * @param trait - The object containing an asset's trait
-   * @return true if the trait is a 'Stat' and false otherwise
-   */
-  private static isStat(trait: Trait) {
-    return trait.display_type === 'number'
-  }
-
-  /**
-   * IsProperty - Checks to see if the given trait is a 'Property'.
-   * A 'Property' is defined as any trait that has a `display_type` of null
-   * and does not have a min/max value
-   *
-   * @param trait - The object containing an asset's trait
-   * @return true if the trait is a 'Property' and false otherwise
-   */
-  private static isProperty(trait: Trait, collectionTraits: CollectionTraits) {
-    return (
-      trait.display_type === null &&
-      trait.trait_type in collectionTraits &&
-      !('max' in collectionTraits[trait.trait_type]) ||
-      !(trait.trait_type in collectionTraits)
-    )
-  }
-
   public updated(changedProperties: Map<string, string>) {
     // Assumption: If the traitData gets updated we should rebuild the
     // traits object that populates UI
@@ -387,7 +321,7 @@ export class NftCardBackTemplate extends LitElement {
               <p>+${value}</p>
             </div>
             <div class="trait_boost-name">
-              ${NftCardBackTemplate.formatTraitType(trait_type)}
+              ${formatTraitType(trait_type)}
             </div>
           </div>
         `
@@ -425,7 +359,7 @@ export class NftCardBackTemplate extends LitElement {
               <div class="stat" style="${styleMap(statStyle)}">
                 <div class="stat-value">${stat.value}</div>
                 <div class="stat-name">
-                  ${NftCardBackTemplate.formatTraitType(stat.trait_type)}
+                  ${formatTraitType(stat.trait_type)}
                 </div>
               </div>
             `
@@ -462,7 +396,7 @@ export class NftCardBackTemplate extends LitElement {
           <div class="trait_ranking" style="${styleMap(rankStyle)}">
             <div class="trait_ranking-header">
               <div class="trait_ranking-header-name">
-                ${NftCardBackTemplate.formatTraitType(trait_type)}
+                ${formatTraitType(trait_type)}
               </div>
               <div class="trait_ranking-header-value">${value} of ${max}</div>
             </div>
@@ -491,7 +425,7 @@ export class NftCardBackTemplate extends LitElement {
         ({trait_type, value }) =>
             html`
         <div class="trait_property" style="${styleMap(propStyle)}">
-          <p class="trait_property-type">${NftCardBackTemplate.formatTraitType(trait_type)}</p>
+          <p class="trait_property-type">${formatTraitType(trait_type)}</p>
           <p class="trait_property-value">${value}</p>
         </div>
       `)}
@@ -563,7 +497,7 @@ export class NftCardBackTemplate extends LitElement {
     const {traits: assetTraits, collectionTraits} = traitData
 
     for (const trait of assetTraits) {
-      const type = this.getTraitType(trait, collectionTraits)
+      const type = getTraitType(trait, collectionTraits)
 
       const name = trait.trait_type
 
@@ -573,21 +507,5 @@ export class NftCardBackTemplate extends LitElement {
         trait_type: trait.trait_type
       })
     }
-  }
-
-  private getTraitType(trait: Trait, collectionTraits: CollectionTraits) {
-    if (NftCardBackTemplate.isProperty(trait, collectionTraits)) {
-      return TraitType.Property
-    }
-    if (NftCardBackTemplate.isRanking(trait, collectionTraits)) {
-      return TraitType.Ranking
-    }
-    if (NftCardBackTemplate.isStat(trait)) {
-      return TraitType.Stat
-    }
-    if (NftCardBackTemplate.isBoost(trait)) {
-      return TraitType.Boost
-    }
-    return null // Default return statement
   }
 }

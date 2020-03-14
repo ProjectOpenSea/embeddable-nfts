@@ -1,50 +1,22 @@
-import {
-  LitElement,
-  html,
-  customElement,
-  property,
-  css
-} from 'lit-element'
+import { css, customElement, html, LitElement, property } from 'lit-element'
 
 import { classMap } from 'lit-html/directives/class-map'
 import { styleMap } from 'lit-html/directives/style-map'
 
-import { OpenSeaAsset, OpenSeaFungibleToken, Network } from 'opensea-js/lib/types'
-
+import { OpenSeaAsset, OpenSeaFungibleToken } from 'opensea-js/lib/types'
 /* lit-element classes */
 import './info-button'
-
-enum ButtonType {
-  Manage = 'manage',
-  Buy = 'buy',
-  View = 'view',
-  SwitchNetwork = 'switchNetwork',
-  Unlock = 'unlock'
-}
-
-enum PriceType {
-  Current = 'current',
-  Previous = 'previous'
-}
-
-const BTN_TEXT: { [index: string]: string } = {
-  [ButtonType.Manage]: 'manage this item ❯',
-  [ButtonType.Buy]: 'buy this item ❯',
-  [ButtonType.View]: 'view on openSea ❯',
-  [ButtonType.SwitchNetwork]: 'switch to ',
-  [ButtonType.Unlock]: 'buy this item ❯'
-}
-
-interface State {
-  isOwnedByAccount: boolean
-  isMatchingNetwork: boolean
-  isUnlocked: boolean
-  hasWeb3: boolean
-  network: Network
-}
+import { toBaseDenomination } from './utils'
+import { ButtonType, PriceType, State } from './types'
+import { BTN_TEXT } from './constants'
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
+  @property({type: Object}) public asset?: OpenSeaAsset
+  @property({type: Boolean}) public isOwnedByAccount!: boolean
+  @property({type: String}) public account!: string
+  @property({type: Boolean}) public horizontal!: boolean
+  @property({type: Object}) public state!: State
 
   static get styles() {
     return css`
@@ -161,30 +133,6 @@ export class NftCardFrontTemplate extends LitElement {
       }
     `
   }
-  @property({type: Object}) public asset?: OpenSeaAsset
-  @property({type: Boolean}) public isOwnedByAccount!: boolean
-  @property({type: String}) public account!: string
-  @property({type: Boolean}) public horizontal!: boolean
-  @property({type: Object}) public state!: State
-
-  private getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
-    return html`
-      <div class="asset-detail-price">
-            ${priceType === PriceType.Previous ? html`<div class="previous-value">Prev.&nbsp;</div>` : null}
-            ${ paymentToken.imageUrl ?
-                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
-                : html`<div class="previous-value">${paymentToken.symbol === 'ETH' ? 'Ξ' : paymentToken.symbol}</div>`
-              }
-            <div class="asset-detail-price value ${priceType}-value">
-                 ${this.toBaseDenomination(price, paymentToken.decimals)}
-            </div>
-      </div>
-    `
-  }
-
-  private toBaseDenomination(value: number, decimals: number) {
-    return +value.toFixed() / Math.pow(10, decimals)
-  }
 
   public getAssetPriceTemplate() {
     const sellOrder = this.asset?.sellOrders && this.asset?.sellOrders.length > 0 ? this.asset.sellOrders[0] : null
@@ -264,6 +212,21 @@ export class NftCardFrontTemplate extends LitElement {
       }
     })
     this.dispatchEvent(buttonEvent)
+  }
+
+  private getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
+    return html`
+      <div class="asset-detail-price">
+            ${priceType === PriceType.Previous ? html`<div class="previous-value">Prev.&nbsp;</div>` : null}
+            ${ paymentToken.imageUrl ?
+                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
+                : html`<div class="previous-value">${paymentToken.symbol === 'ETH' ? 'Ξ' : paymentToken.symbol}</div>`
+              }
+            <div class="asset-detail-price value ${priceType}-value">
+                 ${toBaseDenomination(price, paymentToken.decimals)}
+            </div>
+      </div>
+    `
   }
 
   private getAssetImageTemplate() {
