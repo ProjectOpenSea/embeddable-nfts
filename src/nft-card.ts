@@ -1,6 +1,5 @@
 import { css, customElement, html, LitElement, property } from 'lit-element'
 import { styleMap } from 'lit-html/directives/style-map'
-
 // @ts-ignore ts error TS7016
 import Web3 from 'web3'
 
@@ -8,27 +7,17 @@ import { Network, OpenSeaPort } from 'opensea-js'
 import { OpenSeaAsset } from 'opensea-js/lib/types'
 
 import { NO_WEB3_ERROR } from './constants'
-
 /* lit-element classes */
 import './pill.ts'
 import './loader.ts'
 import './nft-card-front.ts'
 import './nft-card-back.ts'
-
-export interface CustomWindow extends Window {
-    ethereum: Web3.Provider
-    web3: Web3
-}
+import { ButtonEvent, CustomWindow } from './types'
+import { getProvider, networkFromId } from './utils'
 
 declare const window: CustomWindow
 
-export interface ButtonEvent {
-    detail: {
-        type: string
-    }
-}
-
-const HORIZONTAL_MIN_CARD_HEIGHT = '190px'
+const HORIZONTAL_MIN_CARD_HEIGHT = '200px'
 const VERT_MIN_CARD_HEIGHT = '670px'
 
 const VERT_CARD_HEIGHT = '560px'
@@ -36,7 +25,7 @@ const VERT_CARD_WIDTH = '380px'
 
 const VERT_CARD_WIDTH_MOBILE = '90vw'
 
-const HORIZONTAL_CARD_HEIGHT = '250px'
+const HORIZONTAL_CARD_HEIGHT = '200px'
 const HORIZONTAL_CARD_WIDTH = '670px'
 
 enum OrientationMode {
@@ -54,6 +43,32 @@ const MOBILE_BREAK_POINT = 600
  */
 @customElement('nft-card')
 export class NftCard extends LitElement {
+
+    /* User configurable properties */
+    @property({type: Boolean}) public horizontal: boolean = true
+    @property({type: Boolean}) public orientationMode: OrientationMode = OrientationMode.Auto
+    @property({type: String}) public tokenAddress: string = ''
+    @property({type: String}) public contractAddress: string = ''
+    @property({type: String}) public tokenId: string = ''
+    @property({type: String}) public width: string = ''
+    @property({type: String}) public height: string = ''
+    @property({type: String}) public minHeight: string = ''
+    @property({type: String}) public network: Network = Network.Main
+
+    @property({type: Object}) private asset!: OpenSeaAsset
+    @property({type: Object}) private traitData: object = {}
+    @property({type: String}) private account: string = ''
+    @property({type: String}) private flippedCard: boolean = false
+    @property({type: Object}) private provider: Web3.Provider
+    @property({type: Object}) private seaport!: OpenSeaPort
+
+    // Card state variables
+    @property({type: Boolean}) private loading = true
+    @property({type: Boolean}) private error = false
+    @property({type: Boolean}) private isOwnedByAccount = false
+    @property({type: Boolean}) private isUnlocked: boolean = true
+    @property({type: Boolean}) private hasWeb3: boolean = false
+    @property({type: Boolean}) private isMatchingNetwork: boolean = false
 
     static get styles() {
         return css`
@@ -99,51 +114,6 @@ export class NftCard extends LitElement {
     `
     }
 
-    /* User configurable properties */
-    @property({type: Boolean}) public horizontal: boolean = false
-    @property({type: Boolean}) public orientationMode: OrientationMode = OrientationMode.Auto
-    @property({type: String}) public contractAddress: string = ''
-    @property({type: String}) public tokenId: string = ''
-    @property({type: String}) public width: string = ''
-    @property({type: String}) public height: string = ''
-    @property({type: String}) public minHeight: string = ''
-    @property({type: String}) public network: Network = Network.Main
-
-    @property({type: Object}) private asset!: OpenSeaAsset
-    @property({type: Object}) private traitData: object = {}
-    @property({type: String}) private account: string = ''
-    @property({type: String}) private flippedCard: boolean = false
-    @property({type: Object}) private provider: Web3.Provider
-    @property({type: Object}) private seaport!: OpenSeaPort
-
-    // Card state variables
-    @property({type: Boolean}) private loading = true
-    @property({type: Boolean}) private error = false
-    @property({type: Boolean}) private isOwnedByAccount = false
-    @property({type: Boolean}) private isUnlocked: boolean = true
-    @property({type: Boolean}) private hasWeb3: boolean = false
-    @property({type: Boolean}) private isMatchingNetwork: boolean = false
-
-    private static getProvider() {
-        if (window.ethereum) {
-            return window.ethereum
-        } else if (window.web3) {
-            return window.web3.currentProvider
-        } else {
-            return new Web3.providers.HttpProvider('https://mainnet.infura.io')
-        }
-    }
-
-    // Given the network version this method returns the network name
-    // Since only Main & Rinkeby are supported we ignore the other networks
-    private static networkFromId(id: string) {
-        switch (id) {
-            case '1': return Network.Main
-            case '4': return Network.Rinkeby
-            default: return null
-        }
-    }
-
     /**
      * ConnectedCallback - Invoked when a component is added to the document’s DOM.
      * Grabs data from the OpenSea SDK and populates data objects to be passed to
@@ -151,6 +121,7 @@ export class NftCard extends LitElement {
      */
     public async connectedCallback() {
         super.connectedCallback()
+        this.tokenAddress =  this.contractAddress ? this.contractAddress : this.tokenAddress
 
         let vertCardWidth
         if (window.innerWidth < MOBILE_BREAK_POINT && this.orientationMode === OrientationMode.Auto) {
@@ -172,12 +143,13 @@ export class NftCard extends LitElement {
         this.hasWeb3 = !!window.web3
 
         // Get the web3 provider
-        this.provider = NftCard.getProvider()
+        this.provider = getProvider()
 
         this.seaport = new OpenSeaPort(this.provider, {networkName: this.network})
 
         try {
-            this.asset = await this.seaport.api.getAsset(this.contractAddress, this.tokenId)
+            this.asset = await this.seaport.api.getAsset({ tokenAddress: this.tokenAddress, tokenId: this.tokenId })
+
             this.traitData = {
                 traits: this.asset.traits,
                 collectionTraits: this.asset.collection.traitStats
@@ -191,7 +163,7 @@ export class NftCard extends LitElement {
 
         this.loading = false
 
-        this.isMatchingNetwork = NftCard.networkFromId(this.provider.networkVersion) === this.network
+        this.isMatchingNetwork = networkFromId(this.provider.networkVersion) === this.network
 
         // Tell the component to update with new state
         await this.requestUpdate()
@@ -202,7 +174,7 @@ export class NftCard extends LitElement {
             this.isOwnedByAccount = this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
         })
         this.provider.on('networkChanged', (networkId: string) => {
-            const network =  NftCard.networkFromId(networkId)
+            const network =  networkFromId(networkId)
             this.isMatchingNetwork = network === this.network
         })
     }
@@ -275,6 +247,7 @@ export class NftCard extends LitElement {
 
     private async eventHandler(event: ButtonEvent) {
         const {detail} = event
+
         switch (detail.type) {
             case 'view':
             case 'manage':
