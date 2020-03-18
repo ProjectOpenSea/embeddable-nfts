@@ -22,7 +22,7 @@
   "dependencies": {
     "lit-element": "^2.2.1",
     "lit-html": "^1.1.2",
-    "opensea-js": "^1.0.0",
+    "opensea-js": "^1.1.0",
     "web3": "0.20.6"
   },
   "husky": {
