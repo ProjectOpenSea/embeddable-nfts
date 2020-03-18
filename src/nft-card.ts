@@ -23,10 +23,11 @@ const VERT_MIN_CARD_HEIGHT = '670px'
 const VERT_CARD_HEIGHT = '560px'
 const VERT_CARD_WIDTH = '380px'
 
-const VERT_CARD_WIDTH_MOBILE = '90vw'
+const VERT_CARD_WIDTH_MOBILE = '80vw'
 
 const HORIZONTAL_CARD_HEIGHT = '200px'
-const HORIZONTAL_CARD_WIDTH = '670px'
+const HORIZONTAL_CARD_WIDTH = '80vw'
+const HORIZONTAL_CARD_MAX_WIDTH = '670px'
 
 enum OrientationMode {
     Auto = 'auto',
@@ -53,6 +54,7 @@ export class NftCard extends LitElement {
     @property({type: String}) public width: string = ''
     @property({type: String}) public height: string = ''
     @property({type: String}) public minHeight: string = ''
+    @property({type: String}) public maxWidth: string = ''
     @property({type: String}) public network: Network = Network.Main
 
     @property({type: Object}) private asset!: OpenSeaAsset
@@ -139,6 +141,7 @@ export class NftCard extends LitElement {
             this.height = this.horizontal ? HORIZONTAL_CARD_HEIGHT : VERT_CARD_HEIGHT
         }
         this.minHeight = this.horizontal ?  HORIZONTAL_MIN_CARD_HEIGHT : VERT_MIN_CARD_HEIGHT
+        this.maxWidth = this.horizontal ?  HORIZONTAL_CARD_MAX_WIDTH : ''
 
         this.hasWeb3 = !!window.web3
 
@@ -229,7 +232,7 @@ export class NftCard extends LitElement {
        </style>
        <div
          class="card ${this.flippedCard ? 'flipped-card' : ''}"
-         style=${styleMap({width: this.width, height: this.height, minHeight: this.minHeight})}
+         style=${styleMap({width: this.width, height: this.height, minHeight: this.minHeight, maxWidth: this.maxWidth})}
        >
 
        <div class="card-inner">
