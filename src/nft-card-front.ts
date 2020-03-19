@@ -33,7 +33,7 @@ export class NftCardFrontTemplate extends LitElement {
         transform: translateY(0);
       }
       .is-vertical {
-        grid-template-columns: 1fr;
+        grid-template-columns: 100%;
         grid-template-rows: 60% 40%;
       }
       .card-front p {
