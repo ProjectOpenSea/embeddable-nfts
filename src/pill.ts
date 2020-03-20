@@ -68,11 +68,11 @@ export class PillTemplate extends LitElement {
     return html`
       <div
         class="pill ${this.imageUrl ? '' : 'no-img'}"
-        style="${styleMap({
+        style=${styleMap({
     backgroundColor: this.backgroundColor,
     color: this.textColor,
     border: this.border
-  })}"
+  })}
       >
         ${this.imageUrl ? html`<img src="${this.imageUrl}" alt=""/>` : ''}
         <p>${this.label}</p>

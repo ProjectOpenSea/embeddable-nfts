@@ -14,7 +14,7 @@ const TRAIT_HEADER_HEIGHT = 42
 const TRAIT_HEADER_MARGIN_BOTTOM = 8
 
 const RANK_HEIGHT = 40
-const RANK_MARGIN = 8
+const RANK_MARGIN = 10
 const rankStyle = {
     height: RANK_HEIGHT + 'px',
     marginBottom: RANK_MARGIN + 'px'
@@ -32,8 +32,6 @@ const BOOST_MARGIN = RANK_MARGIN
 const BOOST_PADDING = RANK_MARGIN
 const boostStyle = {
   height: BOOST_HEIGHT + 'px',
-  marginBottom: BOOST_MARGIN + 'px',
-  paddingBottom: BOOST_MARGIN + 'px'
 }
 
 const STAT_HEIGHT = PROP_HEIGHT
@@ -110,7 +108,7 @@ export class NftCardBackTemplate extends LitElement {
         text-transform: uppercase;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         line-height: 20px;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
       .trait-header p {
         margin: 0 0 10px 8px;
@@ -124,7 +122,6 @@ export class NftCardBackTemplate extends LitElement {
         border-radius: 5px;
         width: 100%;
         box-sizing: border-box;
-        cursor: pointer;
         text-align: center;
         border: 1px solid #2d9cdb;
         background-color: #edfbff;
@@ -170,6 +167,7 @@ export class NftCardBackTemplate extends LitElement {
       .trait_ranking .trait_ranking-header .trait_ranking-header-value {
         color: #9e9e9e;
         font-size: 11px;
+        text-transform: none;
       }
       .trait_ranking .trait_ranking-bar {
         width: 100%;
@@ -190,7 +188,9 @@ export class NftCardBackTemplate extends LitElement {
         border-radius: 14px;
         max-width: calc(100% - 2px);
       }
-
+      .trait-header-stats {
+        margin-bottom: 0;
+      }
       .stat {
         display: grid;
         grid-template-columns: 1fr 4fr;
@@ -199,14 +199,14 @@ export class NftCardBackTemplate extends LitElement {
         border-bottom: 1px solid rgba(0, 0, 0, 0.2);
       }
       .stat-name {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 100;
         text-transform: capitalize;
         margin-left: 5px;
       }
       .stat-value {
         color: #2d9cdb;
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 100;
         margin-left: 5px;
       }
@@ -214,13 +214,11 @@ export class NftCardBackTemplate extends LitElement {
         display: flex;
         align-items: center;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        margin-bottom: 8px;
-        padding-bottom: 8px;
       }
       .trait_boost .trait_boost-value {
         width: 30px;
         height: 30px;
-        background-color: #2d9cdb;
+        background-color: transparent;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -229,7 +227,12 @@ export class NftCardBackTemplate extends LitElement {
       }
       .trait_boost .trait_boost-value p {
         font-size: 12px;
-        color: #ffffff;
+        color: #2d9cdb;
+      }
+      .remaining-traits {
+        font-weight: bold;
+        margin-top: 10px;
+        display: block;
       }
     `
   }
@@ -297,7 +300,7 @@ export class NftCardBackTemplate extends LitElement {
     const {numRender, numRemaining} = this.getRenderNumber(TraitType.Boost, boosts.length)
 
     return html`
-      <div class="trait-header">
+      <div class="trait-header trait-header-stats">
         <div class="trait-icon">
           <svg
             width="10"
@@ -316,7 +319,7 @@ export class NftCardBackTemplate extends LitElement {
       </div>
       ${boosts.slice(0, numRender).map(
         ({trait_type, value}) => html`
-          <div class="trait_boost" style="${styleMap(boostStyle)}" >
+          <div class="trait_boost" style=${styleMap(boostStyle)} >
             <div class="trait_boost-value">
               <p>+${value}</p>
             </div>
@@ -337,7 +340,7 @@ export class NftCardBackTemplate extends LitElement {
     const {numRender, numRemaining} = this.getRenderNumber(TraitType.Stat, stats.length)
 
     return html`
-        <div class="trait-header">
+        <div class="trait-header trait-header-stats">
           <div class="trait-icon">
             <svg
               width="15"
@@ -356,7 +359,7 @@ export class NftCardBackTemplate extends LitElement {
         </div>
         ${stats.slice(0, numRender).map(stat =>
           html`
-              <div class="stat" style="${styleMap(statStyle)}">
+              <div class="stat" style=${styleMap(statStyle)}>
                 <div class="stat-value">${stat.value}</div>
                 <div class="stat-name">
                   ${formatTraitType(stat.trait_type)}
@@ -393,7 +396,7 @@ export class NftCardBackTemplate extends LitElement {
       </div>
       ${rankings.slice(0, numRender).map(
         ({trait_type, value, max}) => html`
-          <div class="trait_ranking" style="${styleMap(rankStyle)}">
+          <div class="trait_ranking" style=${styleMap(rankStyle)}>
             <div class="trait_ranking-header">
               <div class="trait_ranking-header-name">
                 ${formatTraitType(trait_type)}
@@ -403,7 +406,6 @@ export class NftCardBackTemplate extends LitElement {
             <div class="trait_ranking-bar">
               <div
                 class="trait_ranking-bar-fill"
-                <!-- if no max then just render full bar -->
                 style=${styleMap({width: `${(+value / +(max || 1 )) * 100}%`})}
               ></div>
             </div>
@@ -483,7 +485,7 @@ export class NftCardBackTemplate extends LitElement {
     if (numRemaining <= 0) {
       return null
     } else {
-      return html`<a class="remainingTraits" href="${this.openseaLink}" target="_blank">+${numRemaining} more</a>`
+      return html`<a class="remaining-traits" href="${this.openseaLink}" target="_blank">+${numRemaining} more</a>`
     }
   }
 

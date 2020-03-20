@@ -80,7 +80,8 @@ export class NftCard extends LitElement {
       }
       .card {
         background-color: transparent;
-        font-family: Avenir Next, Avenir, Helvetica Neue, sans-serif;
+        font-family: 'Roboto', sans-serif;
+        -webkit-font-smoothing: antialiased;
         font-style: normal;
         font-weight: normal;
         border-radius: 5px;
@@ -96,7 +97,6 @@ export class NftCard extends LitElement {
         transform-style: preserve-3d;
         box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.25);
         border-radius: 5px;
-        /* min-height: 260px; */
       }
       .flipped-card .card-inner {
         transform: rotateY(180deg);
@@ -249,7 +249,7 @@ export class NftCard extends LitElement {
     }
 
     private async eventHandler(event: ButtonEvent) {
-        const {detail} = event
+        const { detail } = event
 
         switch (detail.type) {
             case 'view':
