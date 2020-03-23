@@ -3,7 +3,12 @@ import { css, customElement, html, LitElement, property } from 'lit-element'
 import { classMap } from 'lit-html/directives/class-map'
 import { styleMap } from 'lit-html/directives/style-map'
 
-import { Network, OpenSeaAsset, OpenSeaFungibleToken } from 'opensea-js/lib/types'
+import {
+  Network,
+  OpenSeaAsset,
+  OpenSeaCollection,
+  OpenSeaFungibleToken
+} from 'opensea-js/lib/types'
 /* lit-element classes */
 import './info-button'
 import { toBaseDenomination } from './utils'
@@ -12,14 +17,14 @@ import { BTN_TEXT } from './constants'
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
-  @property({type: Object}) public asset?: OpenSeaAsset
-  @property({type: Boolean}) public isOwnedByAccount!: boolean
-  @property({type: String}) public account!: string
-  @property({type: Boolean}) public horizontal!: boolean
-  @property({type: Object}) public state!: State
+    @property({type: Object}) public asset?: OpenSeaAsset
+    @property({type: Boolean}) public isOwnedByAccount!: boolean
+    @property({type: String}) public account!: string
+    @property({type: Boolean}) public horizontal!: boolean
+    @property({type: Object}) public state!: State
 
-  static get styles() {
-    return css`
+    static get styles() {
+        return css`
       .card-front {
         position: absolute;
         backface-visibility: hidden;
@@ -81,7 +86,7 @@ export class NftCardFrontTemplate extends LitElement {
         font-size: 12px;
       }
       .asset-detail-name {
-        font-weight: 300;
+        font-weight: 400;
         text-align: left;
       }
       .asset-detail-price {
@@ -93,7 +98,7 @@ export class NftCardFrontTemplate extends LitElement {
         display: flex;
         flex-flow: row;
         justify-content: flex-end;
-        align-items: center;
+        align-items: baseline;
       }
       .asset-detail-price img {
          margin-left: 5px;
@@ -132,18 +137,27 @@ export class NftCardFrontTemplate extends LitElement {
         color: #222222;
       }
     `
-  }
+    }
 
-  public getAssetPriceTemplate() {
-    const sellOrder = this.asset?.sellOrders && this.asset?.sellOrders.length > 0 ? this.asset.sellOrders[0] : null
-    const currentPriceTemplate = sellOrder && sellOrder?.paymentTokenContract ?
-        this.getPriceTemplate(PriceType.Current, sellOrder?.paymentTokenContract, sellOrder?.currentPrice?.toNumber() || 0) : null
+    private static getAssetImageStyles(collection: OpenSeaCollection) {
+        // @ts-ignore - since card_display_style is not serialized by opensea sdk yet
+        const cardDisplayStyle = collection.displayData.card_display_style
+        return {
+            'padding': cardDisplayStyle === 'padded' ? '10px' : '',
+            'background-size': `${cardDisplayStyle}`
+        }
+    }
 
-    const prevPriceTemplate = this.asset?.lastSale?.paymentToken ?
-        this.getPriceTemplate(PriceType.Previous, this.asset?.lastSale?.paymentToken,
-            +this.asset?.lastSale?.totalPrice) : null
+    public getAssetPriceTemplate() {
+        const sellOrder = this.asset?.sellOrders && this.asset?.sellOrders.length > 0 ? this.asset.sellOrders[0] : null
+        const currentPriceTemplate = sellOrder && sellOrder?.paymentTokenContract ?
+            this.getPriceTemplate(PriceType.Current, sellOrder?.paymentTokenContract, sellOrder?.currentPrice?.toNumber() || 0) : null
 
-    return (html`
+        const prevPriceTemplate = this.asset?.lastSale?.paymentToken ?
+            this.getPriceTemplate(PriceType.Previous, this.asset?.lastSale?.paymentToken,
+                +this.asset?.lastSale?.totalPrice) : null
+
+        return (html`
     <div class="asset-detail-price">
       <a class="asset-link" href="${this.asset?.openseaLink}" target="_blank">
         ${currentPriceTemplate}
@@ -151,21 +165,21 @@ export class NftCardFrontTemplate extends LitElement {
        </a>
     </div>
     `)
-  }
-
-  /**
-   * Implement `render` to define a template for your element.
-   */
-  public render() {
-    if (!this.asset) {
-      return undefined // If there is no asset then we can't render
     }
 
-    const { openseaLink, collection, assetContract, name } = this.asset
-    const { network } = this.state
+    /**
+     * Implement `render` to define a template for your element.
+     */
+    public render() {
+        if (!this.asset) {
+            return undefined // If there is no asset then we can't render
+        }
+
+        const {openseaLink, collection, assetContract, name} = this.asset
+        const {network} = this.state
 
 
-    return html`
+        return html`
       <div class="card-front ${classMap({'is-vertical': !this.horizontal})}">
         <info-button
             style="position: absolute; top: 5px; left: 5px"
@@ -206,101 +220,103 @@ export class NftCardFrontTemplate extends LitElement {
         </div>
       </div>
     `
-  }
+    }
 
-  /*
-   * EventHandler - Dispatch event allowing parent to handle click event
-   * '_event' isn't used here but it's needed to call the handler
-   */
-  public eventHandler(_event: any, type: string) {
-    const buttonEvent = new CustomEvent('button-event', {
-      detail: {
-        type
-      }
-    })
-    this.dispatchEvent(buttonEvent)
-  }
+    /*
+     * EventHandler - Dispatch event allowing parent to handle click event
+     * '_event' isn't used here but it's needed to call the handler
+     */
+    public eventHandler(_event: any, type: string) {
+        const buttonEvent = new CustomEvent('button-event', {
+            detail: {
+                type
+            }
+        })
+        this.dispatchEvent(buttonEvent)
+    }
 
-  private getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
-    return html`
+    private getPriceTemplate(priceType: PriceType, paymentToken: OpenSeaFungibleToken, price: number) {
+        return html`
       <div class="asset-detail-price">
             ${priceType === PriceType.Previous ? html`<div class="previous-value">Prev.&nbsp;</div>` : null}
-            ${ paymentToken.imageUrl ?
-                html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
-                : html`<div class="previous-value">${paymentToken.symbol === 'ETH' ? 'Ξ' : paymentToken.symbol}</div>`
-              }
+            ${paymentToken.imageUrl ?
+            html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
+            : html`<div class="previous-value">${paymentToken.symbol === 'ETH' ? 'Ξ' : paymentToken.symbol}</div>`
+        }
             <div class="asset-detail-price value ${priceType}-value">
                  ${toBaseDenomination(price, paymentToken.decimals)}
             </div>
       </div>
     `
-  }
-
-  private getAssetImageTemplate() {
-    if (!this.asset) {
-      return undefined
     }
 
-    const { openseaLink , imageUrl, collection} = this.asset
-    return (html`
+    private getAssetImageTemplate() {
+        if (!this.asset) {
+            return undefined
+        }
+
+        const {openseaLink, imageUrl, collection} = this.asset
+        return (html`
       <div class="asset-image-container">
             <a href="${openseaLink}" target="_blank">
                   <div
                       class="asset-image"
                       style=${styleMap({
-                            'background-image': `url(${imageUrl})`,
-                            // @ts-ignore - since card_display_style is not serialized by opensea sdk yet
-                            'background-size':`${collection.displayData ? collection.displayData.card_display_style : ''}`
-                          })}
+            'background-image': `url(${imageUrl})`,
+            ...NftCardFrontTemplate.getAssetImageStyles(collection)
+        })}
                   ></div>
             </a>
         </div>
     `)
-  }
+    }
 
-  private getButtonTemplate() {
-    return html`
+    private getButtonTemplate() {
+        return html`
       <button
         @click="${(e: any) => this.eventHandler(e, 'view')}"
       >
         ${BTN_TEXT[ButtonType.Buy]}
       </button>
     `
-  }
-
-  // @ts-ignore
-  private _getButtonTemplate() {
-
-    let btnType: ButtonType
-
-    if (this.state.hasWeb3) {
-      if (this.state.isUnlocked) {
-        if (this.state.isMatchingNetwork) {
-          if (this.state.isOwnedByAccount) {
-            // The account owns asset
-            btnType = ButtonType.Manage
-          } else {
-            // Asset is for sale and not owned by currently selected account
-            btnType = ButtonType.Buy
-          }
-        } else {
-          // Network does not match or connected to unsupported network
-          btnType = ButtonType.SwitchNetwork // "switchNetwork" + this.state.network
-        }
-      } else {
-        // Wallet is locked or access not granted
-        btnType = ButtonType.Unlock
-      }
-    } else {
-      // No injected web3 found
-      btnType = ButtonType.View
     }
-    // If we are informing the user to switch networks we need to append the
-    // network on which the asset resides
-    const btnText: string = btnType === ButtonType.SwitchNetwork ? BTN_TEXT[btnType] + this.state.network : BTN_TEXT[btnType]
-    const btnStyle = btnType === ButtonType.SwitchNetwork ? {'background-color': 'rgb(183, 183, 183)', 'cursor': 'not-allowed'} : null
 
-    return html`
+    // @ts-ignore
+    private _getButtonTemplate() {
+
+        let btnType: ButtonType
+
+        if (this.state.hasWeb3) {
+            if (this.state.isUnlocked) {
+                if (this.state.isMatchingNetwork) {
+                    if (this.state.isOwnedByAccount) {
+                        // The account owns asset
+                        btnType = ButtonType.Manage
+                    } else {
+                        // Asset is for sale and not owned by currently selected account
+                        btnType = ButtonType.Buy
+                    }
+                } else {
+                    // Network does not match or connected to unsupported network
+                    btnType = ButtonType.SwitchNetwork // "switchNetwork" + this.state.network
+                }
+            } else {
+                // Wallet is locked or access not granted
+                btnType = ButtonType.Unlock
+            }
+        } else {
+            // No injected web3 found
+            btnType = ButtonType.View
+        }
+        // If we are informing the user to switch networks we need to append the
+        // network on which the asset resides
+        const btnText: string = btnType === ButtonType.SwitchNetwork ? BTN_TEXT[btnType] + this.state.network : BTN_TEXT[btnType]
+        const btnStyle = btnType === ButtonType.SwitchNetwork ? {
+            'background-color': 'rgb(183, 183, 183)',
+            'cursor': 'not-allowed'
+        } : null
+
+        return html`
       <button
         style=${btnStyle ? styleMap(btnStyle) : ''}
         @click="${(e: any) => this.eventHandler(e, btnType)}"
@@ -308,5 +324,5 @@ export class NftCardFrontTemplate extends LitElement {
         ${btnText}
       </button>
     `
-  }
+    }
 }

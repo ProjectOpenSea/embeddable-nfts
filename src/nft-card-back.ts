@@ -77,6 +77,8 @@ export class NftCardBackTemplate extends LitElement {
         overflow: hidden;
         padding: 16px 24px;
         box-sizing: border-box;
+        font-size: 15px;
+        font-weight: 400;
       }
       .card-back p {
         margin: 10px;
@@ -85,7 +87,6 @@ export class NftCardBackTemplate extends LitElement {
         display: grid;
         grid-template-columns: repeat(3, minmax(auto, 33%));
         column-gap: 10px;
-
         height: 100%;
       }
       .is-vertical {
@@ -101,7 +102,6 @@ export class NftCardBackTemplate extends LitElement {
       }
       .trait-header {
         display: flex;
-        font-size: 14px;
         color: rgba(0, 0, 0, 0.87);
         font-weight: 700;
         letter-spacing: 1px;
@@ -131,7 +131,6 @@ export class NftCardBackTemplate extends LitElement {
       .trait_property p {
         margin: 7px 0;
         font-weight: 400;
-        font-size: 15px;
         color: rgba(0, 0, 0, 0.87);
       }
       .trait_property .trait_property-type {
@@ -148,7 +147,6 @@ export class NftCardBackTemplate extends LitElement {
         text-overflow: ellipsis;
         margin: 0;
         color: rgba(0,0,0,.87);
-        font-size: 15px;
       }
       .trait_ranking {
         margin-bottom: 16px;
@@ -196,18 +194,16 @@ export class NftCardBackTemplate extends LitElement {
         grid-template-columns: 1fr 4fr;
         justify-items: left;
         align-items: center;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
       }
       .stat-name {
-        font-size: 18px;
-        font-weight: 100;
         text-transform: capitalize;
         margin-left: 5px;
       }
       .stat-value {
         color: #2d9cdb;
-        font-size: 26px;
-        font-weight: 100;
+        font-size: 25px;
+        font-weight: 300;
         margin-left: 5px;
       }
       .trait_boost {
@@ -226,11 +222,12 @@ export class NftCardBackTemplate extends LitElement {
         margin-right: 10px;
       }
       .trait_boost .trait_boost-value p {
-        font-size: 12px;
+        font-size: 16px;
         color: #2d9cdb;
       }
       .remaining-traits {
-        font-weight: bold;
+      	text-transform: none;
+      	font-weight: bold;
         margin-top: 10px;
         display: block;
       }
