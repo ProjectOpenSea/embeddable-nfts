@@ -74,6 +74,9 @@ export class NftCard extends LitElement {
 
     static get styles() {
         return css`
+      :host {
+      	all: initial;
+      }
       p {
         margin: 0;
         -webkit-font-smoothing: antialiased;
