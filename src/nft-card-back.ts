@@ -117,6 +117,9 @@ export class NftCardBackTemplate extends LitElement {
         height: 100%;
       }
       .trait_property {
+	display: flex;
+        flex-flow: column;
+        justify-content: space-between;
         background: #edfbff;
         border: 1px solid #2d9cdb;
         border-radius: 5px;
@@ -420,7 +423,26 @@ export class NftCardBackTemplate extends LitElement {
 
     const {numRender, numRemaining} = this.getRenderNumber(TraitType.Property, props.length)
 
-    return html`${props.slice(0, numRender).map(
+    return html`
+        <div class="trait-header">
+          <div class="trait-icon">
+    	<svg
+    	  width="18"
+    	  height="100%"
+    	  viewBox="0 0 12 8"
+    	  fill="none"
+    	  xmlns="http://www.w3.org/2000/svg"
+    	>
+    	  <path
+    	    d="M0 2.00001H9.33333V0.666672H0V2.00001ZM0 4.66667H9.33333V3.33334H0V4.66667ZM0 7.33334H9.33333V6H0V7.33334ZM10.6667 7.33334H12V6H10.6667V7.33334ZM10.6667 0.666672V2.00001H12V0.666672H10.6667ZM10.6667 4.66667H12V3.33334H10.6667V4.66667Z"
+    	    fill="#1C1F27"
+    	  />
+    	</svg>
+          </div>
+          <p class="attribute-title">Properties</p>
+        </div>
+
+    ${props.slice(0, numRender).map(
         ({trait_type, value }) =>
             html`
         <div class="trait_property" style="${styleMap(propStyle)}">
@@ -428,8 +450,7 @@ export class NftCardBackTemplate extends LitElement {
           <p class="trait_property-value">${value}</p>
         </div>
       `)}
-      ${this.viewMoreTemplate(numRemaining)}
-      `
+      ${this.viewMoreTemplate(numRemaining)}`
   }
 
   public render() {
@@ -444,23 +465,6 @@ export class NftCardBackTemplate extends LitElement {
           class="card-back-inner ${classMap({'is-vertical': !this.horizontal})}"
         >
           <div class="attribute-container attribute-properties">
-            <div class="trait-header">
-              <div class="trait-icon">
-                <svg
-                  width="18"
-                  height="100%"
-                  viewBox="0 0 12 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0 2.00001H9.33333V0.666672H0V2.00001ZM0 4.66667H9.33333V3.33334H0V4.66667ZM0 7.33334H9.33333V6H0V7.33334ZM10.6667 7.33334H12V6H10.6667V7.33334ZM10.6667 0.666672V2.00001H12V0.666672H10.6667ZM10.6667 4.66667H12V3.33334H10.6667V4.66667Z"
-                    fill="#1C1F27"
-                  />
-                </svg>
-              </div>
-              <p class="attribute-title">Properties</p>
-            </div>
             ${this.traits ? this.getPropsTemplate(this.traits.props) : ''}
           </div>
 

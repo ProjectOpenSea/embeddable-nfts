@@ -84,7 +84,8 @@ export class NftCard extends LitElement {
         -webkit-font-smoothing: antialiased;
         font-style: normal;
         font-weight: normal;
-        border-radius: 5px;
+        line-height: normal;
+	border-radius: 5px;
         perspective: 1000px;
         margin: auto;
       }

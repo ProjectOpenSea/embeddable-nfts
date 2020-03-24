@@ -30,7 +30,7 @@ export class InfoButtonTemplate extends LitElement {
             height="24"
             viewBox="0 0 24 24"
           >
-            <path d="M0 0h24v24H0z" fill="white" />
+            <path d="M0 0h24v24H0z" fill="transparent" />
             <path
               id="info-icon"
               fill="rgb(82, 87, 89)"
