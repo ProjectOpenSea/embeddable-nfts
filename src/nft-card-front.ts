@@ -103,6 +103,7 @@ export class NftCardFrontTemplate extends LitElement {
       .asset-detail-price img {
          margin-left: 5px;
          width: 15px;
+	 align-self: center;
       }
       .asset-detail-price .value {
         margin-left: 5px;
