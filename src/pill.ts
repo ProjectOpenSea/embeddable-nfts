@@ -7,12 +7,12 @@ export class PillTemplate extends LitElement {
   /**
    * Create an observed property. Triggers update on change.
    */
-  @property({type: String}) public imageUrl = ''
-  @property({type: String}) public label = ''
-  @property({type: String}) public backgroundColor = ''
-  @property({type: String}) public textColor = ''
-  @property({type: String}) public border = 'none'
-  @property({type: Object}) public customStyles = {
+  @property({ type: String }) public imageUrl = ''
+  @property({ type: String }) public label = ''
+  @property({ type: String }) public backgroundColor = ''
+  @property({ type: String }) public textColor = ''
+  @property({ type: String }) public border = 'none'
+  @property({ type: Object }) public customStyles = {
     backgroundColor: this.backgroundColor,
     color: this.textColor,
     border: this.border
@@ -69,12 +69,16 @@ export class PillTemplate extends LitElement {
       <div
         class="pill ${this.imageUrl ? '' : 'no-img'}"
         style=${styleMap({
-    backgroundColor: this.backgroundColor,
-    color: this.textColor,
-    border: this.border
-  })}
+          backgroundColor: this.backgroundColor,
+          color: this.textColor,
+          border: this.border
+        })}
       >
-        ${this.imageUrl ? html`<img src="${this.imageUrl}" alt=""/>` : ''}
+        ${this.imageUrl
+          ? html`
+              <img src="${this.imageUrl}" alt="" />
+            `
+          : ''}
         <p>${this.label}</p>
       </div>
     `
