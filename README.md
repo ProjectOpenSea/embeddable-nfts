@@ -24,7 +24,7 @@ mode on mobile (breakpoint is at 600px). In `manual` mode the card will be unaff
 
 Add this to your `<head>` tag:
 ```
-<script src="https://cdn.jsdelivr.net/gh/ProjectOpenSea/embeddable_nfts/dist/nft-card.min.js"></script>
+<script src="https://unpkg.com/embeddable-nfts/dist/nft-card.min.js"></script>
 ```
 
 Then add this into your code:
