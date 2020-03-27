@@ -262,10 +262,6 @@ export class NftCardBackTemplate extends LitElement {
     }
   }
 
-  public async connectedCallback() {
-    super.connectedCallback()
-  }
-
   public getContainerHeight() {
     let containerHeight
     const traitHeaderHeight = TRAIT_HEADER_HEIGHT + TRAIT_HEADER_MARGIN_BOTTOM

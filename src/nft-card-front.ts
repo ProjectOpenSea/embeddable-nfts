@@ -47,7 +47,6 @@ export class NftCardFrontTemplate extends LitElement {
 
       .asset-image-container {
         border-right: 1px solid #e2e6ef;
-        padding: 26px;
         background-size: cover;
         box-sizing: border-box;
       }
@@ -57,6 +56,7 @@ export class NftCardFrontTemplate extends LitElement {
         background-position: 50%;
         background-repeat: no-repeat;
         height: 100%;
+        box-sizing: border-box;
       }
 
       .is-vertical .asset-image-container {
@@ -193,11 +193,14 @@ export class NftCardFrontTemplate extends LitElement {
 
     return html`
       <div class="card-front ${classMap({ 'is-vertical': !this.horizontal })}">
-        <info-button
-          style="position: absolute; top: 5px; left: 5px"
-          @flip-event="${(e: any) => this.eventHandler(e, 'flip')}"
-        ></info-button>
-
+        ${this.asset.traits.length > 0
+          ? html`
+              <info-button
+                style="position: absolute; top: 5px; right: 5px"
+                @flip-event="${(e: any) => this.eventHandler(e, 'flip')}"
+              ></info-button>
+            `
+          : ''}
         ${this.getAssetImageTemplate()}
 
         <div class="asset-details-container">
