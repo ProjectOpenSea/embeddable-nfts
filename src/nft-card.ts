@@ -45,9 +45,9 @@ const MOBILE_BREAK_POINT = 600
 @customElement('nft-card')
 export class NftCard extends LitElement {
   /* User configurable properties */
-  @property({ type: Boolean }) public horizontal: boolean = true
-  @property({ type: Boolean }) public orientationMode: OrientationMode =
-    OrientationMode.Auto
+  @property({ type: Boolean }) public horizontal?: boolean
+  @property({ type: Boolean }) public vertical?: boolean
+  @property({ type: String }) public orientationMode?: OrientationMode
   @property({ type: String }) public tokenAddress: string = ''
   @property({ type: String }) public contractAddress: string = ''
   @property({ type: String }) public tokenId: string = ''
@@ -131,24 +131,36 @@ export class NftCard extends LitElement {
       ? this.contractAddress
       : this.tokenAddress
 
-    let vertCardWidth
-    if (
-      window.innerWidth < MOBILE_BREAK_POINT &&
-      this.orientationMode === OrientationMode.Auto
-    ) {
-      vertCardWidth = VERT_CARD_WIDTH_MOBILE
+    /* If user sets any style overrides assume manual mode unless user has defined the mode */
+    if (!this.orientationMode) {
+      this.orientationMode =
+        this.width || this.height || this.horizontal || this.vertical
+          ? OrientationMode.Manual
+          : OrientationMode.Auto
+    }
+
+    this.horizontal = this.horizontal || !(this.vertical || this.horizontal)
+
+    let vertCardWidth = ''
+    if (this.orientationMode === OrientationMode.Auto) {
+      vertCardWidth =
+        window.innerWidth < MOBILE_BREAK_POINT
+          ? VERT_CARD_WIDTH_MOBILE
+          : VERT_CARD_WIDTH
       this.horizontal = false
-    } else {
-      vertCardWidth = VERT_CARD_WIDTH
     }
 
     // Set default dimensions
-    if (!this.width) {
-      this.width = this.horizontal ? HORIZONTAL_CARD_WIDTH : vertCardWidth
-    }
-    if (!this.height) {
-      this.height = this.horizontal ? HORIZONTAL_CARD_HEIGHT : VERT_CARD_HEIGHT
-    }
+    this.width = this.width
+      ? this.width
+      : this.horizontal
+      ? HORIZONTAL_CARD_WIDTH
+      : vertCardWidth
+    this.height = this.height
+      ? this.height
+      : this.horizontal
+      ? HORIZONTAL_CARD_HEIGHT
+      : VERT_CARD_HEIGHT
     this.minHeight = this.horizontal
       ? HORIZONTAL_MIN_CARD_HEIGHT
       : VERT_MIN_CARD_HEIGHT
