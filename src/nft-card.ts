@@ -139,7 +139,7 @@ export class NftCard extends LitElement {
           : OrientationMode.Auto
     }
 
-    this.horizontal = this.horizontal || !(this.vertical || this.horizontal)
+    this.horizontal = this.horizontal || !this.vertical
 
     let vertCardWidth = ''
     if (this.orientationMode === OrientationMode.Auto) {
