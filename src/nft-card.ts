@@ -141,13 +141,12 @@ export class NftCard extends LitElement {
 
     this.horizontal = this.horizontal || !this.vertical
 
-    let vertCardWidth = ''
-    if (this.orientationMode === OrientationMode.Auto) {
-      vertCardWidth =
-        window.innerWidth < MOBILE_BREAK_POINT
-          ? VERT_CARD_WIDTH_MOBILE
-          : VERT_CARD_WIDTH
-      this.horizontal = false
+    let vertCardWidth = VERT_CARD_WIDTH
+    if (
+      this.orientationMode === OrientationMode.Auto &&
+      window.innerWidth < MOBILE_BREAK_POINT
+    ) {
+      vertCardWidth = VERT_CARD_WIDTH_MOBILE
     }
 
     // Set default dimensions
