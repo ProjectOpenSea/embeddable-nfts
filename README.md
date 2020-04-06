@@ -16,7 +16,7 @@ mode on mobile (breakpoint is at 600px). In `manual` mode the card will be unaff
 
 `tokenId`\* - The token Id of the asset.
 
-`network` - The name of the network the asset is on `mainnet` or `rinkeby`. Default: `mainnet`.
+`network` - The name of the network the asset is on `main` or `rinkeby`. Default: `main`.
 
 \*Required inputs
 
@@ -32,7 +32,7 @@ Then add this into your code:
 <nft-card
   tokenAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
   tokenId="2242579050293992223"
-  network="mainnet"
+  network="main"
   >
 </nft-card>
 ```
