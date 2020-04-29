@@ -13,7 +13,7 @@ import './loader.ts'
 import './nft-card-front.ts'
 import './nft-card-back.ts'
 import { ButtonEvent, CustomWindow } from './types'
-import { getProvider, networkFromId } from './utils'
+import { getProvider, networkFromId, networkFromString } from './utils'
 
 declare const window: CustomWindow
 
@@ -82,7 +82,7 @@ export class NftCard extends LitElement {
         -webkit-font-smoothing: antialiased;
       }
       .card {
-        background-color: transparent;
+        background-color: white;
         font-family: 'Roboto', sans-serif;
         -webkit-font-smoothing: antialiased;
         font-style: normal;
@@ -101,6 +101,7 @@ export class NftCard extends LitElement {
         transform-style: preserve-3d;
         box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.25);
         border-radius: 5px;
+        overflow: hidden;
       }
       .flipped-card .card-inner {
         transform: rotateY(180deg);
@@ -141,13 +142,12 @@ export class NftCard extends LitElement {
 
     this.horizontal = this.horizontal || !this.vertical
 
-    let vertCardWidth = ''
-    if (this.orientationMode === OrientationMode.Auto) {
-      vertCardWidth =
-        window.innerWidth < MOBILE_BREAK_POINT
-          ? VERT_CARD_WIDTH_MOBILE
-          : VERT_CARD_WIDTH
-      this.horizontal = false
+    let vertCardWidth = VERT_CARD_WIDTH
+    if (
+      this.orientationMode === OrientationMode.Auto &&
+      window.innerWidth < MOBILE_BREAK_POINT
+    ) {
+      vertCardWidth = VERT_CARD_WIDTH_MOBILE
     }
 
     // Set default dimensions
@@ -171,6 +171,7 @@ export class NftCard extends LitElement {
     // Get the web3 provider
     this.provider = getProvider()
 
+    this.network = networkFromString(this.network)
     this.seaport = new OpenSeaPort(this.provider, { networkName: this.network })
 
     try {
