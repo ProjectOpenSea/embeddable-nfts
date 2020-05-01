@@ -172,8 +172,8 @@ export class NftCard extends LitElement {
     // Get the web3 provider
     this.provider = getProvider()
 
-    this.network = networkFromString(this.network)
-    this.seaport = new OpenSeaPort(this.provider, { networkName: this.network })
+    const networkName = networkFromString(this.network)
+    this.seaport = new OpenSeaPort(this.provider, { networkName })
 
     try {
       this.asset = await this.seaport.api.getAsset({

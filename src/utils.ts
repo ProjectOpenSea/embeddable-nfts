@@ -84,11 +84,10 @@ export const networkFromId = (id: string) => {
 
 export const networkFromString = (name: string) => {
   switch (name) {
-    case 'mainnet':
-    case 'main':
-      return Network.Main
     case 'rinkeby':
       return Network.Rinkeby
+    case 'mainnet':
+    case 'main':
     default:
       return Network.Main
   }
