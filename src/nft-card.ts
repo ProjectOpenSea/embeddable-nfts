@@ -101,7 +101,6 @@ export class NftCard extends LitElement {
         transform-style: preserve-3d;
         box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.25);
         border-radius: 5px;
-        overflow: hidden;
       }
       .flipped-card .card-inner {
         transform: rotateY(180deg);
