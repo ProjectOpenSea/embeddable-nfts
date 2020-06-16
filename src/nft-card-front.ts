@@ -91,20 +91,29 @@ export class NftCardFrontTemplate extends LitElement {
         text-align: left;
       }
       .asset-detail-price {
-        text-align: right;
-      }
-      .asset-detail-price {
+        align-items: flex-end;
         font-size: 18px;
         font-weight: 400;
         display: flex;
         flex-flow: row;
         justify-content: flex-end;
-        align-items: baseline;
+        line-height: 15px;
+        text-align: right;
+        padding: 6px 0;
       }
       .asset-detail-price img {
-        margin-left: 5px;
+        margin: 0 4px;
+      }
+      .asset-detail-price-current img {
         width: 15px;
-        align-self: center;
+      }
+      .asset-detail-price-previous {
+        font-size: 14px;
+        color: rgb(130, 130, 130);
+        line-height: 10px;
+      }
+      .asset-detail-price-previous img {
+        width: 1ex;
       }
       .asset-detail-price .value {
         margin-left: 5px;
@@ -173,11 +182,9 @@ export class NftCardFrontTemplate extends LitElement {
       : null
 
     return html`
-      <div class="asset-detail-price">
-        <a class="asset-link" href="${this.asset?.openseaLink}" target="_blank">
-          ${currentPriceTemplate} ${prevPriceTemplate}
-        </a>
-      </div>
+      <a class="asset-link" href="${this.asset?.openseaLink}" target="_blank">
+        ${currentPriceTemplate} ${prevPriceTemplate}
+      </a>
     `
   }
 
@@ -189,7 +196,7 @@ export class NftCardFrontTemplate extends LitElement {
       return undefined // If there is no asset then we can't render
     }
 
-    const { openseaLink, collection, assetContract, name } = this.asset
+    const { openseaLink, collection, name } = this.asset
     const { network } = this.state
 
     return html`
@@ -215,8 +222,8 @@ export class NftCardFrontTemplate extends LitElement {
                 target="_blank"
               >
                 <pill-element
-                  .imageUrl=${assetContract.imageUrl}
-                  .label=${assetContract.name}
+                  .imageUrl=${collection.imageUrl}
+                  .label=${collection.name}
                   textColor="#828282"
                   border="1px solid #E2E6EF"
                 ></pill-element>
@@ -265,7 +272,7 @@ export class NftCardFrontTemplate extends LitElement {
     price: number
   ) {
     return html`
-      <div class="asset-detail-price">
+      <div class="asset-detail-price asset-detail-price-${priceType}">
         ${priceType === PriceType.Previous
           ? html`
               <div class="previous-value">Prev.&nbsp;</div>
@@ -278,7 +285,7 @@ export class NftCardFrontTemplate extends LitElement {
                 ${paymentToken.symbol === 'ETH' ? 'Ξ' : paymentToken.symbol}
               </div>
             `}
-        <div class="asset-detail-price value ${priceType}-value">
+        <div class="asset-detail-price-value">
           ${toBaseDenomination(price, paymentToken.decimals)}
         </div>
       </div>
