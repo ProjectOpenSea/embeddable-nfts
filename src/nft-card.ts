@@ -38,7 +38,7 @@ const MOBILE_BREAK_POINT = 600
 
 /**
  * Nft-card element that manages front & back of card.
- * Facilitates aquisition and distribution data between
+ * Facilitates acquisition and distribution data between
  * components.
  * Registers <nft-card> as an HTML tag.
  */
@@ -56,6 +56,7 @@ export class NftCard extends LitElement {
   @property({ type: String }) public minHeight: string = ''
   @property({ type: String }) public maxWidth: string = ''
   @property({ type: String }) public network: Network = Network.Main
+  @property({ type: String }) public referrerAddress: string = ''
 
   @property({ type: Object }) private asset!: OpenSeaAsset
   @property({ type: Object }) private traitData: object = {}
@@ -215,7 +216,12 @@ export class NftCard extends LitElement {
       const order = this.asset.sellOrders[0]
       await this.seaport.fulfillOrder({
         order,
-        accountAddress: this.account
+        accountAddress: this.account,
+
+        // Include the referrer address if one is defined
+        ...(this.referrerAddress
+          ? { referrerAddress: this.referrerAddress }
+          : {})
       })
     }
   }
@@ -309,7 +315,10 @@ export class NftCard extends LitElement {
   }
 
   private goToOpenSea() {
-    window.open(this.asset.openseaLink, '_blank')
+    const url = this.referrerAddress
+      ? `${this.asset.openseaLink}?ref=${this.referrerAddress}`
+      : this.asset.openseaLink
+    window.open(url, '_blank')
   }
 
   /**

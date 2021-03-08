@@ -27,7 +27,7 @@
         "max-classes-per-file": [true, 1],
         "max-line-length": false,
         "member-access": true,
-        "member-ordering": [true, "public-before-private", "static-before-instance", "variables-before-functions"],
+        "member-ordering": [true, {"order": "fields-first"}],
         "newline-before-return": false,
         "new-parens": true,
         "no-angle-bracket-type-assertion": true,
