@@ -47,10 +47,6 @@ Then add this into your code:
 </nft-card>
 ```
 
-### Referral
-
-Add the referrerAddress property to
-
 ### Development
 
 For developers looking to contribute or modify the code, or view the example use the following commands:
