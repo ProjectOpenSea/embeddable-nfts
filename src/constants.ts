@@ -10,5 +10,5 @@ export const BTN_TEXT: { [index: string]: string } = {
   [ButtonType.Buy]: 'buy this item ❯',
   [ButtonType.View]: 'view on openSea ❯',
   [ButtonType.SwitchNetwork]: 'switch to ',
-  [ButtonType.Unlock]: 'buy this item ❯'
+  [ButtonType.Unlock]: 'buy this item ❯',
 }

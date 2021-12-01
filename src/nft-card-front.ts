@@ -7,7 +7,7 @@ import {
   Network,
   OpenSeaAsset,
   OpenSeaCollection,
-  OpenSeaFungibleToken
+  OpenSeaFungibleToken,
 } from 'opensea-js/lib/types'
 /* lit-element classes */
 import './info-button'
@@ -155,7 +155,7 @@ export class NftCardFrontTemplate extends LitElement {
     const cardDisplayStyle = collection.displayData.card_display_style
     return {
       padding: cardDisplayStyle === 'padded' ? '10px' : '',
-      'background-size': `${cardDisplayStyle}`
+      'background-size': `${cardDisplayStyle}`,
     }
   }
 
@@ -245,9 +245,7 @@ export class NftCardFrontTemplate extends LitElement {
             >
           </div>
           ${this.getAssetPriceTemplate()}
-          <div class="asset-action-buy">
-            ${this.getButtonTemplate()}
-          </div>
+          <div class="asset-action-buy">${this.getButtonTemplate()}</div>
         </div>
       </div>
     `
@@ -260,8 +258,8 @@ export class NftCardFrontTemplate extends LitElement {
   public eventHandler(_event: any, type: string) {
     const buttonEvent = new CustomEvent('button-event', {
       detail: {
-        type
-      }
+        type,
+      },
     })
     this.dispatchEvent(buttonEvent)
   }
@@ -274,9 +272,7 @@ export class NftCardFrontTemplate extends LitElement {
     return html`
       <div class="asset-detail-price asset-detail-price-${priceType}">
         ${priceType === PriceType.Previous
-          ? html`
-              <div class="previous-value">Prev.&nbsp;</div>
-            `
+          ? html` <div class="previous-value">Prev.&nbsp;</div> `
           : null}
         ${paymentToken.imageUrl
           ? html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
@@ -305,7 +301,7 @@ export class NftCardFrontTemplate extends LitElement {
             class="asset-image"
             style=${styleMap({
               'background-image': `url(${imageUrl})`,
-              ...NftCardFrontTemplate.getAssetImageStyles(collection)
+              ...NftCardFrontTemplate.getAssetImageStyles(collection),
             })}
           ></div>
         </a>
@@ -357,7 +353,7 @@ export class NftCardFrontTemplate extends LitElement {
       btnType === ButtonType.SwitchNetwork
         ? {
             'background-color': 'rgb(183, 183, 183)',
-            cursor: 'not-allowed'
+            cursor: 'not-allowed',
           }
         : null
 

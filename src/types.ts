@@ -7,7 +7,7 @@ export enum TraitType {
   Property = 'prop',
   Stat = 'stat',
   Ranking = 'ranking',
-  Boost = 'boost'
+  Boost = 'boost',
 }
 
 export interface Traits {
@@ -39,12 +39,12 @@ export enum ButtonType {
   Buy = 'buy',
   View = 'view',
   SwitchNetwork = 'switchNetwork',
-  Unlock = 'unlock'
+  Unlock = 'unlock',
 }
 
 export enum PriceType {
   Current = 'current',
-  Previous = 'previous'
+  Previous = 'previous',
 }
 
 export interface State {

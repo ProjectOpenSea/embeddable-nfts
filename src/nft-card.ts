@@ -31,7 +31,7 @@ const HORIZONTAL_CARD_MAX_WIDTH = '670px'
 
 enum OrientationMode {
   Auto = 'auto',
-  Manual = 'manual'
+  Manual = 'manual',
 }
 
 const MOBILE_BREAK_POINT = 600
@@ -178,12 +178,12 @@ export class NftCard extends LitElement {
     try {
       this.asset = await this.seaport.api.getAsset({
         tokenAddress: this.tokenAddress,
-        tokenId: this.tokenId
+        tokenId: this.tokenId,
       })
 
       this.traitData = {
         traits: this.asset.traits,
-        collectionTraits: this.asset.collection.traitStats
+        collectionTraits: this.asset.collection.traitStats,
       }
     } catch (e) {
       this.error = true
@@ -221,7 +221,7 @@ export class NftCard extends LitElement {
         // Include the referrer address if one is defined
         ...(this.referrerAddress
           ? { referrerAddress: this.referrerAddress }
-          : {})
+          : {}),
       })
     }
   }
@@ -236,9 +236,7 @@ export class NftCard extends LitElement {
   }
 
   public renderLoaderTemplate() {
-    return html`
-      <loader-element></loader-element>
-    `
+    return html` <loader-element></loader-element> `
   }
 
   public renderInnerCardTemplate() {
@@ -252,7 +250,7 @@ export class NftCard extends LitElement {
           isMatchingNetwork: this.isMatchingNetwork,
           isUnlocked: this.isUnlocked,
           hasWeb3: this.hasWeb3,
-          network: this.network
+          network: this.network,
         }}
         .account=${this.account}
       ></nft-card-front>
@@ -276,7 +274,7 @@ export class NftCard extends LitElement {
           width: this.width,
           height: this.height,
           minHeight: this.minHeight,
-          maxWidth: this.maxWidth
+          maxWidth: this.maxWidth,
         })}
       >
         <div class="card-inner">
