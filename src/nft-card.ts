@@ -1,21 +1,17 @@
 import { css, customElement, html, LitElement, property } from 'lit-element'
 import { styleMap } from 'lit-html/directives/style-map'
-// @ts-ignore ts error TS7016
-import Web3 from 'web3'
+import { provider as Web3Provider } from 'web3-core'
 
 import { Network, OpenSeaPort } from 'opensea-js'
 import { OpenSeaAsset } from 'opensea-js/lib/types'
 
-import { NO_WEB3_ERROR } from './constants'
 /* lit-element classes */
 import './pill.ts'
 import './loader.ts'
 import './nft-card-front.ts'
 import './nft-card-back.ts'
-import { ButtonEvent, CustomWindow } from './types'
-import { getProvider, networkFromId, networkFromString } from './utils'
-
-declare const window: CustomWindow
+import { ButtonEvent } from './types'
+import { getProvider, networkFromString } from './utils'
 
 const HORIZONTAL_MIN_CARD_HEIGHT = '200px'
 const VERT_MIN_CARD_HEIGHT = '670px'
@@ -31,7 +27,7 @@ const HORIZONTAL_CARD_MAX_WIDTH = '670px'
 
 enum OrientationMode {
   Auto = 'auto',
-  Manual = 'manual'
+  Manual = 'manual',
 }
 
 const MOBILE_BREAK_POINT = 600
@@ -60,18 +56,13 @@ export class NftCard extends LitElement {
 
   @property({ type: Object }) private asset!: OpenSeaAsset
   @property({ type: Object }) private traitData: object = {}
-  @property({ type: String }) private account: string = ''
   @property({ type: String }) private flippedCard: boolean = false
-  @property({ type: Object }) private provider: Web3.Provider
+  @property({ type: Object }) private provider: Web3Provider = null
   @property({ type: Object }) private seaport!: OpenSeaPort
 
   // Card state variables
   @property({ type: Boolean }) private loading = true
   @property({ type: Boolean }) private error = false
-  @property({ type: Boolean }) private isOwnedByAccount = false
-  @property({ type: Boolean }) private isUnlocked: boolean = true
-  @property({ type: Boolean }) private hasWeb3: boolean = false
-  @property({ type: Boolean }) private isMatchingNetwork: boolean = false
 
   static get styles() {
     return css`
@@ -167,23 +158,19 @@ export class NftCard extends LitElement {
       : VERT_MIN_CARD_HEIGHT
     this.maxWidth = this.horizontal ? HORIZONTAL_CARD_MAX_WIDTH : ''
 
-    this.hasWeb3 = !!window.web3
-
-    // Get the web3 provider
     this.provider = getProvider()
-
     const networkName = networkFromString(this.network)
     this.seaport = new OpenSeaPort(this.provider, { networkName })
 
     try {
       this.asset = await this.seaport.api.getAsset({
         tokenAddress: this.tokenAddress,
-        tokenId: this.tokenId
+        tokenId: this.tokenId,
       })
 
       this.traitData = {
         traits: this.asset.traits,
-        collectionTraits: this.asset.collection.traitStats
+        collectionTraits: this.asset.collection.traitStats,
       }
     } catch (e) {
       this.error = true
@@ -193,37 +180,9 @@ export class NftCard extends LitElement {
 
     this.loading = false
 
-    this.isMatchingNetwork =
-      networkFromId(this.provider.networkVersion) === this.network
-
     // Tell the component to update with new state
     await this.requestUpdate()
 
-    // Watch for the account to change then update state of component
-    this.provider.on('accountsChanged', (accounts: string[]) => {
-      this.account = accounts.length > 0 ? accounts[0] : ''
-      this.isOwnedByAccount =
-        this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
-    })
-    this.provider.on('networkChanged', (networkId: string) => {
-      const network = networkFromId(networkId)
-      this.isMatchingNetwork = network === this.network
-    })
-  }
-
-  public async buyAsset() {
-    if (this.isUnlocked && this.asset.sellOrders) {
-      const order = this.asset.sellOrders[0]
-      await this.seaport.fulfillOrder({
-        order,
-        accountAddress: this.account,
-
-        // Include the referrer address if one is defined
-        ...(this.referrerAddress
-          ? { referrerAddress: this.referrerAddress }
-          : {})
-      })
-    }
   }
 
   public renderErrorTemplate() {
@@ -236,9 +195,7 @@ export class NftCard extends LitElement {
   }
 
   public renderLoaderTemplate() {
-    return html`
-      <loader-element></loader-element>
-    `
+    return html` <loader-element></loader-element> `
   }
 
   public renderInnerCardTemplate() {
@@ -248,13 +205,8 @@ export class NftCard extends LitElement {
         @button-event="${this.eventHandler}"
         .asset=${this.asset}
         .state=${{
-          isOwnedByAccount: this.isOwnedByAccount,
-          isMatchingNetwork: this.isMatchingNetwork,
-          isUnlocked: this.isUnlocked,
-          hasWeb3: this.hasWeb3,
-          network: this.network
+          network: this.network,
         }}
-        .account=${this.account}
       ></nft-card-front>
       <nft-card-back
         .horizontal=${this.horizontal}
@@ -276,7 +228,7 @@ export class NftCard extends LitElement {
           width: this.width,
           height: this.height,
           minHeight: this.minHeight,
-          maxWidth: this.maxWidth
+          maxWidth: this.maxWidth,
         })}
       >
         <div class="card-inner">
@@ -299,14 +251,7 @@ export class NftCard extends LitElement {
 
     switch (detail.type) {
       case 'view':
-      case 'manage':
         this.goToOpenSea()
-        break
-      case 'unlock':
-        await this.connectWallet()
-        break
-      case 'buy':
-        await this.buyAsset()
         break
       case 'flip':
         this.flipCard()
@@ -319,35 +264,5 @@ export class NftCard extends LitElement {
       ? `${this.asset.openseaLink}?ref=${this.referrerAddress}`
       : this.asset.openseaLink
     window.open(url, '_blank')
-  }
-
-  /**
-   * async connectWallet - Initializes connection to the injected web3 account
-   * Pre-Conditions: this.provider has been defined - this method should only
-   * be called if web3 is available. If web3 is available then this.provider
-   * must be defined
-   */
-  private async connectWallet() {
-    if (window.web3) {
-      // If it is modern dapp then show prompt requesting access
-      if (window.ethereum) {
-        const ACCESS_DENIED = 4001
-        await window.ethereum.enable().catch((error: { code: number }) => {
-          if (error.code === ACCESS_DENIED) {
-            this.isUnlocked = false
-          }
-        })
-      }
-
-      if (this.provider.selectedAddress) {
-        this.account = this.provider.selectedAddress
-        this.isOwnedByAccount =
-          this.asset.owner.address.toLowerCase() === this.account.toLowerCase()
-      }
-    } else {
-      this.isUnlocked = false
-      alert(NO_WEB3_ERROR)
-      throw new Error(NO_WEB3_ERROR)
-    }
   }
 }

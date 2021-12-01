@@ -14,35 +14,35 @@ const RANK_HEIGHT = 40
 const RANK_MARGIN = 10
 const rankStyle = {
   height: RANK_HEIGHT + 'px',
-  marginBottom: RANK_MARGIN + 'px'
+  marginBottom: RANK_MARGIN + 'px',
 }
 
 const PROP_HEIGHT = 50
 const PROP_MARGIN = RANK_MARGIN
 const propStyle = {
   height: PROP_HEIGHT + 'px',
-  marginBottom: PROP_MARGIN + 'px'
+  marginBottom: PROP_MARGIN + 'px',
 }
 
 const BOOST_HEIGHT = RANK_HEIGHT
 const BOOST_MARGIN = RANK_MARGIN
 const BOOST_PADDING = RANK_MARGIN
 const boostStyle = {
-  height: BOOST_HEIGHT + 'px'
+  height: BOOST_HEIGHT + 'px',
 }
 
 const STAT_HEIGHT = PROP_HEIGHT
 const STAT_MARGIN = RANK_MARGIN
 const statStyle = {
   height: RANK_HEIGHT + 'px',
-  marginBottom: RANK_MARGIN + 'px'
+  marginBottom: RANK_MARGIN + 'px',
 }
 
 const traitHeight = {
   prop: PROP_HEIGHT + PROP_MARGIN,
   boost: BOOST_HEIGHT + BOOST_MARGIN + BOOST_PADDING,
   ranking: RANK_HEIGHT + RANK_MARGIN,
-  stat: STAT_HEIGHT + STAT_MARGIN
+  stat: STAT_HEIGHT + STAT_MARGIN,
 }
 
 @customElement('nft-card-back')
@@ -283,7 +283,7 @@ export class NftCardBackTemplate extends LitElement {
     const numRemaining = numberOfTraits - numRender
     return {
       numRender,
-      numRemaining
+      numRemaining,
     }
   }
 
@@ -321,9 +321,7 @@ export class NftCardBackTemplate extends LitElement {
             <div class="trait_boost-value">
               <p>+${value}</p>
             </div>
-            <div class="trait_boost-name">
-              ${formatTraitType(trait_type)}
-            </div>
+            <div class="trait_boost-name">${formatTraitType(trait_type)}</div>
           </div>
         `
       )}
@@ -359,13 +357,11 @@ export class NftCardBackTemplate extends LitElement {
         <p class="attribute-title">Stats</p>
       </div>
       ${stats.slice(0, numRender).map(
-        stat =>
+        (stat) =>
           html`
             <div class="stat" style=${styleMap(statStyle)}>
               <div class="stat-value">${stat.value}</div>
-              <div class="stat-name">
-                ${formatTraitType(stat.trait_type)}
-              </div>
+              <div class="stat-name">${formatTraitType(stat.trait_type)}</div>
             </div>
           `
       )}
@@ -476,7 +472,7 @@ export class NftCardBackTemplate extends LitElement {
 
         <div
           class="card-back-inner ${classMap({
-            'is-vertical': !this.horizontal
+            'is-vertical': !this.horizontal,
           })}"
         >
           <div class="attribute-container attribute-properties">
@@ -515,7 +511,7 @@ export class NftCardBackTemplate extends LitElement {
       props: [],
       stats: [],
       rankings: [],
-      boosts: []
+      boosts: [],
     }
     const { traits: assetTraits, collectionTraits } = traitData
 
@@ -527,9 +523,9 @@ export class NftCardBackTemplate extends LitElement {
       this.traits[type + 's'].push({
         value: trait.value,
         ...(type === TraitType.Ranking
-          ? { max: (collectionTraits[name].max as unknown) as number }
+          ? { max: collectionTraits[name].max as unknown as number }
           : {}),
-        trait_type: trait.trait_type
+        trait_type: trait.trait_type,
       })
     }
   }

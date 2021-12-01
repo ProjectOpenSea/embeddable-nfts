@@ -1,9 +1,7 @@
-import { CollectionTraits, Trait, TraitType, CustomWindow } from './types'
+import { CollectionTraits, Trait, TraitType } from './types'
 // @ts-ignore ts error TS7016
 import Web3 from 'web3'
 import { Network } from 'opensea-js/lib'
-
-declare const window: CustomWindow
 
 export const formatTraitType = (traitType: string) =>
   traitType.replace(/_/g, ' ')
@@ -63,28 +61,13 @@ export const getTraitType = (
 }
 
 export const getProvider = () =>
-  window.ethereum
-    ? window.ethereum
-    : window.web3
-    ? window.web3.currentProvider
-    : new Web3.providers.HttpProvider('https://mainnet.infura.io')
-
-// Given the network version this method returns the network name
-// Since only Main & Rinkeby are supported we ignore the other networks
-export const networkFromId = (id: string) => {
-  switch (id) {
-    case '1':
-      return Network.Main
-    case '4':
-      return Network.Rinkeby
-    default:
-      return null
-  }
-}
+  (Web3.givenProvider || new Web3.providers.HttpProvider('https://mainnet.infura.io'))
 
 export const networkFromString = (name: string) => {
   switch (name) {
     case 'rinkeby':
+    case 'testnet':
+    case 'testnets':
       return Network.Rinkeby
     case 'mainnet':
     case 'main':

@@ -7,7 +7,7 @@ export enum TraitType {
   Property = 'prop',
   Stat = 'stat',
   Ranking = 'ranking',
-  Boost = 'boost'
+  Boost = 'boost',
 }
 
 export interface Traits {
@@ -34,30 +34,13 @@ export interface CollectionTraits {
   [index: string]: OpenSeaTraitStats
 }
 
-export enum ButtonType {
-  Manage = 'manage',
-  Buy = 'buy',
-  View = 'view',
-  SwitchNetwork = 'switchNetwork',
-  Unlock = 'unlock'
-}
-
 export enum PriceType {
   Current = 'current',
-  Previous = 'previous'
+  Previous = 'previous',
 }
 
 export interface State {
-  isOwnedByAccount: boolean
-  isMatchingNetwork: boolean
-  isUnlocked: boolean
-  hasWeb3: boolean
   network: Network
-}
-
-export interface CustomWindow extends Window {
-  ethereum: Web3.Provider
-  web3: Web3
 }
 
 export interface ButtonEvent {
