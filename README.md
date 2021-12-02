@@ -54,8 +54,8 @@ For developers looking to contribute or modify the code, or view the example use
 ```bash
   git clone https://github.com/ProjectOpenSea/embeddable_nfts.git
   cd embeddable_nfts
-  npm install
-  npm run dev:demo
+  yarn install
+  yarn run dev:demo
 ```
 
 #### Development server
