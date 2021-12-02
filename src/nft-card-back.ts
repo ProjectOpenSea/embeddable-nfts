@@ -14,41 +14,42 @@ const RANK_HEIGHT = 40
 const RANK_MARGIN = 10
 const rankStyle = {
   height: RANK_HEIGHT + 'px',
-  marginBottom: RANK_MARGIN + 'px'
+  marginBottom: RANK_MARGIN + 'px',
 }
 
 const PROP_HEIGHT = 50
 const PROP_MARGIN = RANK_MARGIN
 const propStyle = {
   height: PROP_HEIGHT + 'px',
-  marginBottom: PROP_MARGIN + 'px'
+  marginBottom: PROP_MARGIN + 'px',
 }
 
 const BOOST_HEIGHT = RANK_HEIGHT
 const BOOST_MARGIN = RANK_MARGIN
 const BOOST_PADDING = RANK_MARGIN
 const boostStyle = {
-  height: BOOST_HEIGHT + 'px'
+  height: BOOST_HEIGHT + 'px',
 }
 
 const STAT_HEIGHT = PROP_HEIGHT
 const STAT_MARGIN = RANK_MARGIN
 const statStyle = {
   height: RANK_HEIGHT + 'px',
-  marginBottom: RANK_MARGIN + 'px'
+  marginBottom: RANK_MARGIN + 'px',
 }
 
 const traitHeight = {
   prop: PROP_HEIGHT + PROP_MARGIN,
   boost: BOOST_HEIGHT + BOOST_MARGIN + BOOST_PADDING,
   ranking: RANK_HEIGHT + RANK_MARGIN,
-  stat: STAT_HEIGHT + STAT_MARGIN
+  stat: STAT_HEIGHT + STAT_MARGIN,
 }
 
 @customElement('nft-card-back')
 export class NftCardBackTemplate extends LitElement {
   @property({ type: Object }) public traitData!: TraitData
   @property({ type: Object }) public openseaLink?: string
+  @property({ type: Boolean }) public flippedCard: boolean = false
   @property({ type: Boolean }) public loading = true
   @property({ type: Boolean }) public horizontal!: boolean
   @property({ type: Number }) public cardHeight!: number
@@ -63,8 +64,15 @@ export class NftCardBackTemplate extends LitElement {
         text-decoration: none;
         color: inherit;
       }
+      .card-back.is-flipped {
+        transition-delay: 0.2s;
+        transition-property: visibility;
+        visibility: initial;
+        backface-visibility: initial;
+      }
       .card-back {
         position: absolute;
+        visibility: hidden;
         backface-visibility: hidden;
         width: 100%;
         height: 100%;
@@ -283,7 +291,7 @@ export class NftCardBackTemplate extends LitElement {
     const numRemaining = numberOfTraits - numRender
     return {
       numRender,
-      numRemaining
+      numRemaining,
     }
   }
 
@@ -321,9 +329,7 @@ export class NftCardBackTemplate extends LitElement {
             <div class="trait_boost-value">
               <p>+${value}</p>
             </div>
-            <div class="trait_boost-name">
-              ${formatTraitType(trait_type)}
-            </div>
+            <div class="trait_boost-name">${formatTraitType(trait_type)}</div>
           </div>
         `
       )}
@@ -359,13 +365,11 @@ export class NftCardBackTemplate extends LitElement {
         <p class="attribute-title">Stats</p>
       </div>
       ${stats.slice(0, numRender).map(
-        stat =>
+        (stat) =>
           html`
             <div class="stat" style=${styleMap(statStyle)}>
               <div class="stat-value">${stat.value}</div>
-              <div class="stat-name">
-                ${formatTraitType(stat.trait_type)}
-              </div>
+              <div class="stat-name">${formatTraitType(stat.trait_type)}</div>
             </div>
           `
       )}
@@ -465,7 +469,7 @@ export class NftCardBackTemplate extends LitElement {
 
   public render() {
     return html`
-      <div class="card-back">
+      <div class="card-back ${classMap({ 'is-vertical': !this.horizontal, 'is-flipped': this.flippedCard })}">
         <info-button
           style="position: absolute; top: 5px; right: 5px"
           @flip-event="${(_e: any) =>
@@ -476,7 +480,7 @@ export class NftCardBackTemplate extends LitElement {
 
         <div
           class="card-back-inner ${classMap({
-            'is-vertical': !this.horizontal
+            'is-vertical': !this.horizontal,
           })}"
         >
           <div class="attribute-container attribute-properties">
@@ -515,7 +519,7 @@ export class NftCardBackTemplate extends LitElement {
       props: [],
       stats: [],
       rankings: [],
-      boosts: []
+      boosts: [],
     }
     const { traits: assetTraits, collectionTraits } = traitData
 
@@ -527,9 +531,9 @@ export class NftCardBackTemplate extends LitElement {
       this.traits[type + 's'].push({
         value: trait.value,
         ...(type === TraitType.Ranking
-          ? { max: (collectionTraits[name].max as unknown) as number }
+          ? { max: collectionTraits[name].max as unknown as number }
           : {}),
-        trait_type: trait.trait_type
+        trait_type: trait.trait_type,
       })
     }
   }

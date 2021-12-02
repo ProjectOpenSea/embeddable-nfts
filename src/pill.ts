@@ -15,7 +15,7 @@ export class PillTemplate extends LitElement {
   @property({ type: Object }) public customStyles = {
     backgroundColor: this.backgroundColor,
     color: this.textColor,
-    border: this.border
+    border: this.border,
   }
 
   static get styles() {
@@ -71,14 +71,10 @@ export class PillTemplate extends LitElement {
         style=${styleMap({
           backgroundColor: this.backgroundColor,
           color: this.textColor,
-          border: this.border
+          border: this.border,
         })}
       >
-        ${this.imageUrl
-          ? html`
-              <img src="${this.imageUrl}" alt="" />
-            `
-          : ''}
+        ${this.imageUrl ? html` <img src="${this.imageUrl}" alt="" /> ` : ''}
         <p>${this.label}</p>
       </div>
     `

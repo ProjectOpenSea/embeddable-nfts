@@ -7,24 +7,25 @@ import {
   Network,
   OpenSeaAsset,
   OpenSeaCollection,
-  OpenSeaFungibleToken
+  OpenSeaFungibleToken,
 } from 'opensea-js/lib/types'
 /* lit-element classes */
 import './info-button'
 import { toBaseDenomination } from './utils'
-import { ButtonType, PriceType, State } from './types'
-import { BTN_TEXT } from './constants'
+import { PriceType, State } from './types'
 
 @customElement('nft-card-front')
 export class NftCardFrontTemplate extends LitElement {
   @property({ type: Object }) public asset?: OpenSeaAsset
-  @property({ type: Boolean }) public isOwnedByAccount!: boolean
-  @property({ type: String }) public account!: string
   @property({ type: Boolean }) public horizontal!: boolean
   @property({ type: Object }) public state!: State
+  @property({ type: Boolean }) public flippedCard: boolean = false
 
   static get styles() {
     return css`
+      .card-front.is-flipped {
+        display: none;
+      }
       .card-front {
         position: absolute;
         backface-visibility: hidden;
@@ -155,7 +156,7 @@ export class NftCardFrontTemplate extends LitElement {
     const cardDisplayStyle = collection.displayData.card_display_style
     return {
       padding: cardDisplayStyle === 'padded' ? '10px' : '',
-      'background-size': `${cardDisplayStyle}`
+      'background-size': `${cardDisplayStyle}`,
     }
   }
 
@@ -200,7 +201,7 @@ export class NftCardFrontTemplate extends LitElement {
     const { network } = this.state
 
     return html`
-      <div class="card-front ${classMap({ 'is-vertical': !this.horizontal })}">
+      <div class="card-front ${classMap({ 'is-vertical': !this.horizontal, 'is-flipped': this.flippedCard })}">
         ${this.asset.traits.length > 0
           ? html`
               <info-button
@@ -217,7 +218,7 @@ export class NftCardFrontTemplate extends LitElement {
               <a
                 class="asset-link"
                 href="http://${network === Network.Rinkeby
-                  ? 'rinkeby.'
+                  ? 'testnets.'
                   : ''}opensea.io/assets/${collection.slug}"
                 target="_blank"
               >
@@ -245,9 +246,7 @@ export class NftCardFrontTemplate extends LitElement {
             >
           </div>
           ${this.getAssetPriceTemplate()}
-          <div class="asset-action-buy">
-            ${this.getButtonTemplate()}
-          </div>
+          <div class="asset-action-buy">${this.getButtonTemplate()}</div>
         </div>
       </div>
     `
@@ -260,8 +259,8 @@ export class NftCardFrontTemplate extends LitElement {
   public eventHandler(_event: any, type: string) {
     const buttonEvent = new CustomEvent('button-event', {
       detail: {
-        type
-      }
+        type,
+      },
     })
     this.dispatchEvent(buttonEvent)
   }
@@ -274,9 +273,7 @@ export class NftCardFrontTemplate extends LitElement {
     return html`
       <div class="asset-detail-price asset-detail-price-${priceType}">
         ${priceType === PriceType.Previous
-          ? html`
-              <div class="previous-value">Prev.&nbsp;</div>
-            `
+          ? html` <div class="previous-value">Prev.&nbsp;</div> `
           : null}
         ${paymentToken.imageUrl
           ? html`<img src="${paymentToken.imageUrl}" alt="" ></img>`
@@ -305,7 +302,7 @@ export class NftCardFrontTemplate extends LitElement {
             class="asset-image"
             style=${styleMap({
               'background-image': `url(${imageUrl})`,
-              ...NftCardFrontTemplate.getAssetImageStyles(collection)
+              ...NftCardFrontTemplate.getAssetImageStyles(collection),
             })}
           ></div>
         </a>
@@ -316,58 +313,9 @@ export class NftCardFrontTemplate extends LitElement {
   private getButtonTemplate() {
     return html`
       <button @click="${(e: any) => this.eventHandler(e, 'view')}">
-        ${BTN_TEXT[ButtonType.Buy]}
+        buy this item ❯
       </button>
     `
   }
 
-  // @ts-ignore
-  private _getButtonTemplate() {
-    let btnType: ButtonType
-
-    if (this.state.hasWeb3) {
-      if (this.state.isUnlocked) {
-        if (this.state.isMatchingNetwork) {
-          if (this.state.isOwnedByAccount) {
-            // The account owns asset
-            btnType = ButtonType.Manage
-          } else {
-            // Asset is for sale and not owned by currently selected account
-            btnType = ButtonType.Buy
-          }
-        } else {
-          // Network does not match or connected to unsupported network
-          btnType = ButtonType.SwitchNetwork // "switchNetwork" + this.state.network
-        }
-      } else {
-        // Wallet is locked or access not granted
-        btnType = ButtonType.Unlock
-      }
-    } else {
-      // No injected web3 found
-      btnType = ButtonType.View
-    }
-    // If we are informing the user to switch networks we need to append the
-    // network on which the asset resides
-    const btnText: string =
-      btnType === ButtonType.SwitchNetwork
-        ? BTN_TEXT[btnType] + this.state.network
-        : BTN_TEXT[btnType]
-    const btnStyle =
-      btnType === ButtonType.SwitchNetwork
-        ? {
-            'background-color': 'rgb(183, 183, 183)',
-            cursor: 'not-allowed'
-          }
-        : null
-
-    return html`
-      <button
-        style=${btnStyle ? styleMap(btnStyle) : ''}
-        @click="${(e: any) => this.eventHandler(e, btnType)}"
-      >
-        ${btnText}
-      </button>
-    `
-  }
 }
