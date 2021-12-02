@@ -21,7 +21,7 @@ mode on mobile (breakpoint is at 600px). In `manual` mode the card will be unaff
 
 `height` - The height of the embeddable. Ex. values `40vh` `300px`. Default: `560px`
 
-`network` - The name of the network the asset is on `mainnet` or `rinkeby`. Default: `mainnet`.
+`network` - The name of the network the asset is on `mainnet` or `testnet`. Default: `mainnet`.
 
 `referrerAddress` - The address of the referrer. Check out the [SDK docs](https://github.com/ProjectOpenSea/opensea-js#affiliate-program) to learn more about the Affiliate program.
 

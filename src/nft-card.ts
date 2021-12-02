@@ -56,7 +56,7 @@ export class NftCard extends LitElement {
 
   @property({ type: Object }) private asset!: OpenSeaAsset
   @property({ type: Object }) private traitData: object = {}
-  @property({ type: String }) private flippedCard: boolean = false
+  @property({ type: String }) public flippedCard: boolean = false
   @property({ type: Object }) private provider: Web3Provider = null
   @property({ type: Object }) private seaport!: OpenSeaPort
 
@@ -207,12 +207,14 @@ export class NftCard extends LitElement {
         .state=${{
           network: this.network,
         }}
+        .flippedCard="${this.flippedCard}"
       ></nft-card-front>
       <nft-card-back
         .horizontal=${this.horizontal}
         .traitData=${this.traitData}
         .openseaLink="${this.asset.openseaLink}"
         @flip-event="${this.eventHandler}"
+        .flippedCard="${this.flippedCard}"
       ></nft-card-back>
     `
   }

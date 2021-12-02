@@ -19,9 +19,13 @@ export class NftCardFrontTemplate extends LitElement {
   @property({ type: Object }) public asset?: OpenSeaAsset
   @property({ type: Boolean }) public horizontal!: boolean
   @property({ type: Object }) public state!: State
+  @property({ type: Boolean }) public flippedCard: boolean = false
 
   static get styles() {
     return css`
+      .card-front.is-flipped {
+        display: none;
+      }
       .card-front {
         position: absolute;
         backface-visibility: hidden;
@@ -197,7 +201,7 @@ export class NftCardFrontTemplate extends LitElement {
     const { network } = this.state
 
     return html`
-      <div class="card-front ${classMap({ 'is-vertical': !this.horizontal })}">
+      <div class="card-front ${classMap({ 'is-vertical': !this.horizontal, 'is-flipped': this.flippedCard })}">
         ${this.asset.traits.length > 0
           ? html`
               <info-button

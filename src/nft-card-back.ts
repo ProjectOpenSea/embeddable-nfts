@@ -49,6 +49,7 @@ const traitHeight = {
 export class NftCardBackTemplate extends LitElement {
   @property({ type: Object }) public traitData!: TraitData
   @property({ type: Object }) public openseaLink?: string
+  @property({ type: Boolean }) public flippedCard: boolean = false
   @property({ type: Boolean }) public loading = true
   @property({ type: Boolean }) public horizontal!: boolean
   @property({ type: Number }) public cardHeight!: number
@@ -63,8 +64,15 @@ export class NftCardBackTemplate extends LitElement {
         text-decoration: none;
         color: inherit;
       }
+      .card-back.is-flipped {
+        transition-delay: 0.2s;
+        transition-property: visibility;
+        visibility: initial;
+        backface-visibility: initial;
+      }
       .card-back {
         position: absolute;
+        visibility: hidden;
         backface-visibility: hidden;
         width: 100%;
         height: 100%;
@@ -461,7 +469,7 @@ export class NftCardBackTemplate extends LitElement {
 
   public render() {
     return html`
-      <div class="card-back">
+      <div class="card-back ${classMap({ 'is-vertical': !this.horizontal, 'is-flipped': this.flippedCard })}">
         <info-button
           style="position: absolute; top: 5px; right: 5px"
           @flip-event="${(_e: any) =>
