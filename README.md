@@ -23,8 +23,6 @@ mode on mobile (breakpoint is at 600px). In `manual` mode the card will be unaff
 
 `network` - The name of the network the asset is on `mainnet` or `testnet`. Default: `mainnet`.
 
-`referrerAddress` - The address of the referrer. Check out the [SDK docs](https://github.com/ProjectOpenSea/opensea-js#affiliate-program) to learn more about the Affiliate program.
-
 \*Required inputs
 
 ### Usage
@@ -42,7 +40,6 @@ Then add this into your code:
   tokenAddress="0x5caebd3b32e210e85ce3e9d51638b9c445481567"
   tokenId="2242579050293992223"
   network="mainnet"
-  referrerAddress="YOUR_ADDRESS_HERE"
   >
 </nft-card>
 ```
